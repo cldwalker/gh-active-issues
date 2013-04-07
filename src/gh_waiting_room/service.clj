@@ -4,15 +4,15 @@
               [io.pedestal.service.http.body-params :as body-params]
               [io.pedestal.service.http.route.definition :refer [defroutes]]
               [io.pedestal.service.interceptor :refer [defon-response]]
+              [clostache.parser :refer [render-resource]]
               [ring.util.response :as ring-resp]))
-
-(defn about-page
-  [request]
-  (ring-resp/response (format "Clojure %s" (clojure-version))))
 
 (defn home-page
   [request]
-  (ring-resp/response "Hello World!"))
+  (ring-resp/response
+   (render-resource "public/index.mustache"
+                    {:github-user (or (System/getenv "GITHUB_USER") "FIXME")
+                     :issues [{:name "cldwalker/debugger#71"} {:name "cldwalker/ripl#10"}]})))
 
 (defon-response html-content-type
   [response]
@@ -20,9 +20,8 @@
 
 (defroutes routes
   [[["/" {:get home-page}
-     ;; Set default interceptors for /about and any other paths under /
      ^:interceptors [(body-params/body-params) html-content-type]
-     ["/about" {:get about-page}]]]])
+     ]]])
 
 ;; You can use this fn or a per-request fn via io.pedestal.service.http.route/url-for
 (def url-for (route/url-for-routes routes))
