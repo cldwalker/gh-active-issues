@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <body>
 <h1>{{github-user}}'s Github Waiting Room</h1>
-<ul>
+<ol>
 {{#issues}}
-    <li><a href="#">{{name}}</a></li>
+    <li id="issue_{{position}}">
+      <a href="{{url}}">{{name}}</a>
+       created by <a href="https://github.com/{{user}}">{{user}}</a> on {{created}}
+      <p>{{desc}}</p>
+    </li>
 {{/issues}}
-</ul>
+</ol>
 </body>
 </html>
