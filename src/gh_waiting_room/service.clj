@@ -10,26 +10,33 @@
 
 (def db (atom {}))
 
-(defn- get-auth
-  []
-  (or (System/getenv "GITHUB_AUTH")
-      (throw (ex-info "Set $GITHUB_AUTH to fetch github issues" {}))))
+(def gh-auth
+  {:auth (or (System/getenv "GITHUB_AUTH")
+             (throw (ex-info "Set $GITHUB_AUTH to basic auth in order fetch github issues." {})))})
+
+(def gh-user
+  (or (System/getenv "GITHUB_USER")
+      (throw (ex-info "Set $GITHUB_USER to the user who owns the issues." {}))))
+
+(def issue-url-regex (re-pattern
+                      (or (System/getenv "GITHUB_ISSUE_REGEX")
+                          (str "github.com/" gh-user))))
 
 (defn- api-options
   []
-  {:filter "all" :all-pages true :auth (get-auth)})
+  (merge {:filter "all" :all-pages true} gh-auth))
 
 ;; TODO: make this customizable
 (defn- issue-filter
   [issue]
-  (and (re-find #"github.com/cldwalker" (str (:html_url issue)))
+  (and (re-find issue-url-regex (str (:html_url issue)))
        (= [] (:labels issue))))
 
 (defn- fetch-gh-issues
   []
   (swap! db assoc :issues (my-issues (api-options))))
 
-(defn ->issue [issue]
+(defn- ->issue [issue]
   {:name (str
           (or (re-find #"[^/]+/[^/]+(?=/issues/\d+)" (:html_url issue))
               (throw (ex-info "Failed to parse name from an issue" {:issue issue})))
