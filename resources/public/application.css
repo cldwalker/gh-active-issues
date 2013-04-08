@@ -32,3 +32,11 @@ li p {
 span {
   position: absolute;
 }
+
+.footer {
+  padding-top: 30px;
+}
+a.source_code {
+  padding-left: 100px;
+  font-size: 20px;
+}
