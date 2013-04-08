@@ -71,7 +71,7 @@
   (when-not (seq (:issues @db)) (fetch-gh-issues))
   (ring-resp/response
    (render-resource "public/index.mustache"
-                    {:github-user (or (System/getenv "GITHUB_USER") "FIXME")
+                    {:github-user (gh-user)
                      :issues (->> (:issues @db)
                                   (filter issue-filter)
                                   (map ->issue)
