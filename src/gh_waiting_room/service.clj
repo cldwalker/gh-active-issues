@@ -6,6 +6,7 @@
               [io.pedestal.service.interceptor :refer [defon-response]]
               [clostache.parser :refer [render-resource]]
               [tentacles.issues :refer [my-issues]]
+              clojure.string
               [ring.util.response :as ring-resp]))
 
 (def db (atom {}))
@@ -22,15 +23,21 @@
                       (or (System/getenv "GITHUB_ISSUE_REGEX")
                           (str "github.com/" gh-user))))
 
+(def gh-hide-labels (when-let [labels (System/getenv "GITHUB_HIDE_LABELS")]
+                      (clojure.string/split labels #"\s*,\s*")))
+
 (defn- api-options
   []
   (merge {:filter "all" :all-pages true} gh-auth))
 
-;; TODO: make this customizable
 (defn- issue-filter
   [issue]
   (and (re-find issue-url-regex (str (:html_url issue)))
-       (= [] (:labels issue))))
+       (if gh-hide-labels
+         (not (some
+               (set gh-hide-labels)
+               (map :name (:labels issue))))
+         (= [] (:labels issue)))))
 
 (defn- fetch-gh-issues
   []
