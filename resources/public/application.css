@@ -7,6 +7,10 @@ h1 {
   font: bold italic 45px/1.5 Helvetica, Verdana, sans-serif;
 }
 
+h2 {
+ font: bold italic 25px/1.5 Helvetica, Verdana, sans-serif;
+}
+
 ol {
   color: #ccc;
   list-style-type: none;
