@@ -32,7 +32,8 @@
 
 (defn- issue-filter
   [issue]
-  (and (re-find issue-url-regex (str (:html_url issue)))
+  (and (not (get-in issue [:repository :private]))
+   (re-find issue-url-regex (str (:html_url issue)))
        (if gh-hide-labels
          (not (some
                (set gh-hide-labels)
