@@ -45,10 +45,9 @@
   (swap! db assoc :issues (my-issues (api-options))))
 
 (defn- ->issue [{body :body :as issue}]
-  {:name (str
-          (or (re-find #"[^/]+/[^/]+(?=/issues/\d+)" (:html_url issue))
-              (throw (ex-info "Failed to parse name from an issue" {:issue issue})))
-          "#"
+  {:name (format "%s#%s"
+          (or (get-in issue [:repository :full_name])
+              (throw (ex-info "No full name given for issue" {:issue issue})))
           (:number issue))
    :type (if (get-in issue [:pull_request :html_url]) "pull request" "issue")
    :url (:html_url issue)

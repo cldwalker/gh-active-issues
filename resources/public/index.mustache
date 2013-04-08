@@ -4,11 +4,15 @@
 <ol>
 {{#issues}}
     <li id="issue_{{position}}">
-      <a href="{{url}}">{{name}}</a>
-       {{type}} created by <a href="https://github.com/{{user}}">{{user}}</a>
-       on {{created}}
-       ({{comments}} comments)
-      <p class='title'>{{title}}</p>
+      <p class="name">
+        <a id="{{name}}" href="#{{name}}">{{name}}</a>
+        created by <a href="https://github.com/{{user}}">{{user}}</a>
+        on {{created}}
+      </p>
+      <p class='title'>
+        <a href="{{url}}">{{title}}</a>
+        {{type}} with {{comments}} comments
+      </p>
       <p class='desc'>{{desc}}</p>
     </li>
 {{/issues}}
