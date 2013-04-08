@@ -36,15 +36,17 @@
   []
   (swap! db assoc :issues (my-issues (api-options))))
 
-(defn- ->issue [issue]
+(defn- ->issue [{body :body :as issue}]
   {:name (str
           (or (re-find #"[^/]+/[^/]+(?=/issues/\d+)" (:html_url issue))
               (throw (ex-info "Failed to parse name from an issue" {:issue issue})))
           "#"
           (:number issue))
    :url (:html_url issue)
-   :desc (str (re-find #".{0,100}\S" (:body issue))
-              (if (> (count (:body issue)) 100) "") " ...")
+   :desc (if (re-find #"^\s*$" body)
+           ""
+           (str (re-find #"^.{0,100}(?=\s|$)" body)
+                (if (> (count body) 100) " ..." "")))
    :user (or (get-in issue [:user :login])
              (throw (ex-info "No user found for issue" {:issue issue})))
    :created (or (re-find #"\d{4}-\d\d-\d\d"(:created_at issue))
