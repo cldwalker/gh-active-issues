@@ -50,7 +50,10 @@
               (throw (ex-info "Failed to parse name from an issue" {:issue issue})))
           "#"
           (:number issue))
+   :type (if (get-in issue [:pull_request :html_url]) "pull request" "issue")
    :url (:html_url issue)
+   :comments (:comments issue)
+   :title (:title issue)
    :desc (if (re-find #"^\s*$" body)
            ""
            (str (re-find #"^.{0,100}(?=\s|$)" body)
