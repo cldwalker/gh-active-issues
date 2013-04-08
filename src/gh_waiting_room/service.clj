@@ -11,29 +11,33 @@
 
 (def db (atom {}))
 
-(def gh-auth
+(defn- gh-auth
+  []
   {:auth (or (System/getenv "GITHUB_AUTH")
              (throw (ex-info "Set $GITHUB_AUTH to basic auth in order fetch github issues." {})))})
 
-(def gh-user
+(defn- gh-user
+  []
   (or (System/getenv "GITHUB_USER")
       (throw (ex-info "Set $GITHUB_USER to the user who owns the issues." {}))))
 
-(def issue-url-regex (re-pattern
-                      (or (System/getenv "GITHUB_ISSUE_REGEX")
-                          (str "github.com/" gh-user))))
+(defn- issue-url-regex
+  []
+  (re-pattern
+   (or (System/getenv "GITHUB_ISSUE_REGEX")
+       (str "github.com/" (gh-user)))))
 
 (def gh-hide-labels (when-let [labels (System/getenv "GITHUB_HIDE_LABELS")]
                       (clojure.string/split labels #"\s*,\s*")))
 
 (defn- api-options
   []
-  (merge {:filter "all" :all-pages true} gh-auth))
+  (merge {:filter "all" :all-pages true} (gh-auth)))
 
 (defn- issue-filter
   [issue]
   (and (not (get-in issue [:repository :private]))
-   (re-find issue-url-regex (str (:html_url issue)))
+   (re-find (issue-url-regex) (str (:html_url issue)))
        (if gh-hide-labels
          (not (some
                (set gh-hide-labels)
