@@ -1,13 +1,18 @@
 <!DOCTYPE html>
+<head>
+<title>{{github-user}}'s Github Waiting Room</title>
+<link href="/application.css" rel="stylesheet" type="text/css" />
+</head>
 <body>
 <h1>{{github-user}}'s Github Waiting Room</h1>
 <ol>
 {{#issues}}
     <li id="issue_{{position}}">
+      <span>{{position}}.</span>
       <p class="name">
-        <a id="{{name}}" href="#{{name}}">{{name}}</a>
+        <a href="{{url}}">{{name}}</a>
         created by <a href="https://github.com/{{user}}">{{user}}</a>
-        on {{created}}
+        on {{created}} (<a id="{{name}}" href="#{{name}}">permalink</a>)
       </p>
       <p class='title'>
         <a href="{{url}}">{{title}}</a>
