@@ -3,7 +3,7 @@
 This is an app to let users know what number they are in my list of
 ongoing github issues. Unfortunately, github doesn't provide a public view of a user's
 [issues dashboard](https://github.com/dashboard/issues/repos). This
-public and curated view of issues is an attempt to make users
+public and *curated* view of issues is an attempt to make users
 understand why they are waiting.
 
 My current app [lives on heroku](http://gh-waiting-room.herokuapp.com/).

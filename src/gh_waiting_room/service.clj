@@ -38,11 +38,11 @@
   [issue]
   (and (not (get-in issue [:repository :private]))
    (re-find (issue-url-regex) (str (:html_url issue)))
-       (if gh-hide-labels
-         (not (some
-               (set gh-hide-labels)
-               (map :name (:labels issue))))
-         (= [] (:labels issue)))))
+   (if gh-hide-labels
+     (not (some
+           (set gh-hide-labels)
+           (map :name (:labels issue))))
+     (= [] (:labels issue)))))
 
 (defn- fetch-gh-issues
   []
