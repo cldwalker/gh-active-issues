@@ -5,7 +5,7 @@
               [io.pedestal.service.http.route.definition :refer [defroutes]]
               [io.pedestal.service.interceptor :refer [defon-response]]
               [clostache.parser :refer [render-resource]]
-              [tentacles.issues :refer [my-issues]]
+              [tentacles.issues :refer [my-issues create-comment]]
               [tentacles.repos :refer [create-hook]]
               clojure.string
               [clojure.data.json :as json]
@@ -89,7 +89,14 @@
 (defn webhook-page
   [request]
   (prn request)
-  (prn "PARAMS" (-> request :params))
+  (let [params (-> request :json-params)
+        _ (prn "Params:" params)
+        action (get params "action")]
+    (when (some #{action} ["created" "reopened"])
+      (let [body "There's nothing to see here. Move along."
+            issue-num (get-in params ["issue" "number"])
+            _ (prn "ISSUE:" issue-num)]
+        (create-comment "cldwalker" "gh-waiting-room" issue-num body (gh-auth))) ))
   {:status 200})
 
 (defon-response html-content-type
