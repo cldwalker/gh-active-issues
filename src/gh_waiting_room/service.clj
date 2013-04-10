@@ -6,7 +6,9 @@
               [io.pedestal.service.interceptor :refer [defon-response]]
               [clostache.parser :refer [render-resource]]
               [tentacles.issues :refer [my-issues]]
+              [tentacles.repos :refer [create-hook]]
               clojure.string
+              [clojure.data.json :as json]
               [ring.util.response :as ring-resp]))
 
 (def db (atom {}))
@@ -33,6 +35,11 @@
 (defn- api-options
   []
   (merge {:filter "all" :all-pages true} (gh-auth)))
+
+(defn create-webhook []
+  (create-hook "cldwalker" "gh-waiting-room" "web"
+               {:url "http://localhost:8080/webhook" :content_type "json"}
+               (assoc (gh-auth) :events ["issues"])))
 
 (defn- issue-filter
   [issue]
@@ -79,6 +86,12 @@
                                   (map-indexed (fn [num elem]
                                                  (assoc elem :position (inc num)))))})))
 
+(defn webhook-page
+  [request]
+  (prn request)
+  (prn "PARAMS" (-> request :params))
+  {:status 200})
+
 (defon-response html-content-type
   [response]
   (ring-resp/content-type response "text/html"))
@@ -86,6 +99,7 @@
 (defroutes routes
   [[["/" {:get home-page}
      ^:interceptors [(body-params/body-params) html-content-type]
+     ["/webhook" {:post webhook-page}]
      ]]])
 
 ;; You can use this fn or a per-request fn via io.pedestal.service.http.route/url-for
