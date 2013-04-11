@@ -36,10 +36,20 @@
   []
   (merge {:filter "all" :all-pages true} (gh-auth)))
 
-(defn create-webhook []
-  (create-hook "cldwalker" "gh-waiting-room" "web"
-               {:url "http://localhost:8080/webhook" :content_type "json"}
+; TODO: can this come from url-for?
+(defn- full-url-for [path]
+  (str (or (System/getenv "APP_DOMAIN") "http://localhost:8080") path))
+
+(defn create-webhook [user name]
+  (create-hook user name "web"
+               {:url (full-url-for "/webhook") :content_type "json"}
                (assoc (gh-auth) :events ["issues"])))
+
+(defn get-in! [m ks]
+  (or (get-in m ks) (throw (ex-info "No value found for nested keys in map" {:map m :keys ks}))))
+
+(defn get! [m k]
+  (or (get m k) (throw (ex-info "No value found for key in map" {:map m :key k}))))
 
 (defn- issue-filter
   [issue]
@@ -55,12 +65,6 @@
 (defn- fetch-gh-issues
   []
   (swap! db assoc :issues (my-issues (api-options))))
-
-(defn get! [m k]
-  (or (get m k) (throw (ex-info "No value found for key in map" {:map m :key k}))))
-
-(defn get-in! [m ks]
-  (or (get-in m ks) (throw (ex-info "No value found for nested keys in map" {:map m :keys ks}))))
 
 (defn- ->issue [issue]
   {:name (format "%s#%s"
@@ -94,10 +98,6 @@
    (render-resource "public/index.mustache"
                     {:github-user (gh-user)
                      :issues (viewable-issues)})))
-
-; TODO: can this come from url-for?
-(defn- full-url-for [path]
-  (str (or (System/getenv "APP_DOMAIN") "http://localhost:8080") path))
 
 (defn- comment-body [issue]
   (str
