@@ -67,9 +67,9 @@
   (swap! db assoc :issues (my-issues (api-options))))
 
 (defn- ->issue [issue]
-  {:name (format "%s#%s"
-                 (get-in! issue [:repository :full_name])
-                 (get! issue :number))
+  {:id (format "%s#%s"
+               (get-in! issue [:repository :full_name])
+               (get! issue :number))
    :type (if (get-in issue [:pull_request :html_url]) "pull request" "issue")
    :url (get! issue :html_url)
    :comments (get! issue :comments)
@@ -80,7 +80,7 @@
              (str (re-find #"^.{0,100}(?=\s|$)" body)
                   (if (> (count body) 100) " ..." ""))))
    :user (get-in! issue [:repository :owner :login])
-   :repo-name (get-in! issue [:repository :name])
+   :name (get-in! issue [:repository :name])
    :created (or (re-find #"\d{4}-\d\d-\d\d"(get! issue :created_at))
                 (throw (ex-info "Failed to parse date from an issue" {:issue issue})))})
 
@@ -106,15 +106,15 @@
      "Thanks for reporting your issue!")
    (format " You're [number %s in my list of open issues](%s). Use that link to check how soon your issue will be answered. Thanks for your patience."
            (:position issue)
-           (full-url-for (str "/#" (:name issue))))))
+           (full-url-for (str "/#" (:id issue))))))
 
 (defn- update-issues-and-create-comment [full-name issue-num]
   (fetch-gh-issues)
   (let [issue (or
-               (some #(and (= (:name %) (format "%s#%s" full-name issue-num)) %) (viewable-issues))
+               (some #(and (= (:id %) (format "%s#%s" full-name issue-num)) %) (viewable-issues))
                (throw (ex-info "No issue found for webhook" {:full-name full-name :issue-num issue-num})))
         body (comment-body issue)]
-    (create-comment (:user issue) (:repo-name issue) issue-num body (gh-auth))))
+    (create-comment (:user issue) (:name issue) issue-num body (gh-auth))))
 
 (defn webhook-page
   [request]

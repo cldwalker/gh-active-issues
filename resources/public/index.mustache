@@ -7,15 +7,15 @@
 <h1>{{github-user}}'s Github Waiting Room</h1>
 <h2>These issues are normally worked on in my personal time. If you'd
   like to have your issue addressed sooner, make sure you're following
-  the contributing guidelines. Also, helping out with issues before yours wouldn't hurt. :p</h2>
+  the contributing guidelines. Also, helping out with issues before yours wouldn't hurt.</h2>
 <ol>
 {{#issues}}
     <li id="issue_{{position}}">
       <span>{{position}}.</span>
       <p class="name">
-        <a href="{{url}}">{{name}}</a>
+        <a href="{{url}}">{{id}}</a>
         created by <a href="https://github.com/{{user}}">{{user}}</a>
-        on {{created}} (<a id="{{name}}" href="#{{name}}">permalink</a>)
+        on {{created}} (<a id="{{id}}" href="#{{id}}">permalink</a>)
       </p>
       <p class='title'>
         <a href="{{url}}">{{title}}</a>
