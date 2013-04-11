@@ -108,22 +108,25 @@
            (:position issue)
            (full-url-for (str "/#" (:id issue))))))
 
-(defn- update-issues-and-create-comment [full-name issue-num]
+(defn- update-issues-and-create-comment [issue-id issue-num]
   (fetch-gh-issues)
   (let [issue (or
-               (some #(and (= (:id %) (format "%s#%s" full-name issue-num)) %) (viewable-issues))
-               (throw (ex-info "No issue found for webhook" {:full-name full-name :issue-num issue-num})))
+               (some #(and (= (:id %) issue-id) %) (viewable-issues))
+               (throw (ex-info "No issue found for webhook" {:issue-id issue-id})))
         body (comment-body issue)]
     (create-comment (:user issue) (:name issue) issue-num body (gh-auth))))
 
 (defn webhook-page
   [request]
   (let [params (-> request :json-params)
-        action (get! params "action")]
+        action (get! params "action")
+        full-name (get-in! params ["repository" "full_name"])
+        issue-num (get-in! params ["issue" "number"])
+        issue-id (format "%s#%s" full-name issue-num)]
     (when (some #{action} ["created" "reopened"])
-      (let [full-name (get-in! params ["repository" "full_name"])
-            issue-num (get-in! params ["issue" "number"])]
-        (update-issues-and-create-comment full-name issue-num))))
+      (update-issues-and-create-comment issue-id issue-num))
+    (when (and (= action "closed") (some #(= (:id %) issue-id) (viewable-issues)))
+      (fetch-gh-issues)))
   {:status 200})
 
 (defon-response html-content-type
