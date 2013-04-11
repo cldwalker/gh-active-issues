@@ -43,8 +43,9 @@
 
 (defn- issue-filter
   [issue]
-  (and (not (get-in issue [:repository :private]))
-   (re-find (issue-url-regex) (str (:html_url issue)))
+  (and
+   (not (get-in issue [:repository :private]))
+   (re-find (issue-url-regex) (get! issue :html_url))
    (if gh-hide-labels
      (not (some
            (set gh-hide-labels)
@@ -55,23 +56,28 @@
   []
   (swap! db assoc :issues (my-issues (api-options))))
 
-(defn- ->issue [{body :body :as issue}]
+(defn get! [m k]
+  (or (get m k) (throw (ex-info "No value found for key in map" {:map m :key k}))))
+
+(defn get-in! [m ks]
+  (or (get-in m ks) (throw (ex-info "No value found for nested keys in map" {:map m :keys ks}))))
+
+(defn- ->issue [issue]
   {:name (format "%s#%s"
-          (or (get-in issue [:repository :full_name])
-              (throw (ex-info "No full name given for issue" {:issue issue})))
-          (:number issue))
+                 (get-in! issue [:repository :full_name])
+                 (get! issue :number))
    :type (if (get-in issue [:pull_request :html_url]) "pull request" "issue")
-   :url (:html_url issue)
-   :comments (:comments issue)
-   :title (:title issue)
-   :desc (if (re-find #"^\s*$" body)
-           ""
-           (str (re-find #"^.{0,100}(?=\s|$)" body)
-                (if (> (count body) 100) " ..." "")))
-   :user (or (get-in issue [:repository :owner :login])
-             (throw (ex-info "No user found for issue" {:issue issue})))
-   :repo-name (get-in issue [:repository :name])
-   :created (or (re-find #"\d{4}-\d\d-\d\d"(:created_at issue))
+   :url (get! issue :html_url)
+   :comments (get! issue :comments)
+   :title (get! issue :title)
+   :desc (let [body (get! issue :body)]
+           (if (re-find #"^\s*$" body)
+             ""
+             (str (re-find #"^.{0,100}(?=\s|$)" body)
+                  (if (> (count body) 100) " ..." ""))))
+   :user (get-in! issue [:repository :owner :login])
+   :repo-name (get-in! issue [:repository :name])
+   :created (or (re-find #"\d{4}-\d\d-\d\d"(get! issue :created_at))
                 (throw (ex-info "Failed to parse date from an issue" {:issue issue})))})
 
 (defn- viewable-issues []
@@ -88,12 +94,6 @@
    (render-resource "public/index.mustache"
                     {:github-user (gh-user)
                      :issues (viewable-issues)})))
-
-(defn get! [m k]
-  (or (get m k) (throw (ex-info "No value found for key in map" {:map m :key k}))))
-
-(defn get-in! [m ks]
-  (or (get-in m ks) (throw (ex-info "No value found for nested keys in map" {:map m :keys ks}))))
 
 ; TODO: can this come from url-for?
 (defn- full-url-for [path]
