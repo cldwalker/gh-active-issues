@@ -68,35 +68,62 @@
            ""
            (str (re-find #"^.{0,100}(?=\s|$)" body)
                 (if (> (count body) 100) " ..." "")))
-   :user (or (get-in issue [:user :login])
+   :user (or (get-in issue [:repository :owner :login])
              (throw (ex-info "No user found for issue" {:issue issue})))
+   :repo-name (get-in issue [:repository :name])
    :created (or (re-find #"\d{4}-\d\d-\d\d"(:created_at issue))
                 (throw (ex-info "Failed to parse date from an issue" {:issue issue})))})
 
+(defn- viewable-issues []
+  (->> (:issues @db)
+       (filter issue-filter)
+       (map ->issue)
+       reverse
+       (map-indexed (fn [num elem]
+                      (assoc elem :position (inc num))))))
 (defn home-page
   [request]
   (when-not (seq (:issues @db)) (fetch-gh-issues))
   (ring-resp/response
    (render-resource "public/index.mustache"
                     {:github-user (gh-user)
-                     :issues (->> (:issues @db)
-                                  (filter issue-filter)
-                                  (map ->issue)
-                                  reverse
-                                  (map-indexed (fn [num elem]
-                                                 (assoc elem :position (inc num)))))})))
+                     :issues (viewable-issues)})))
+
+(defn get! [m k]
+  (or (get m k) (throw (ex-info "No value found for key in map" {:map m :key k}))))
+
+(defn get-in! [m ks]
+  (or (get-in m ks) (throw (ex-info "No value found for nested keys in map" {:map m :keys ks}))))
+
+; TODO: can this come from url-for?
+(defn- full-url-for [path]
+  (str (or (System/getenv "APP_DOMAIN") "http://localhost:8080") path))
+
+(defn- comment-body [issue]
+  (str
+   (if (= (:type issue) "pull request")
+     "Thanks for your pull request!"
+     "Thanks for reporting your issue!")
+   (format " You're [number %s in my list of open issues](%s). Use that link to check how soon your issue will be answered. Thanks for your patience."
+           (:position issue)
+           (full-url-for (str "/#" (:name issue))))))
+
+(defn- update-issues-and-create-comment [full-name issue-num]
+  (fetch-gh-issues)
+  (let [issue (or
+               (some #(and (= (:name %) (format "%s#%s" full-name issue-num)) %) (viewable-issues))
+               (throw (ex-info "No issue found for webhook" {:full-name full-name :issue-num issue-num})))
+        body (comment-body issue)]
+    (create-comment (:user issue) (:repo-name issue) issue-num body (gh-auth))))
 
 (defn webhook-page
   [request]
-  (prn request)
   (let [params (-> request :json-params)
-        _ (prn "Params:" params)
-        action (get params "action")]
+        action (get! params "action")]
     (when (some #{action} ["created" "reopened"])
-      (let [body "There's nothing to see here. Move along."
-            issue-num (get-in params ["issue" "number"])
-            _ (prn "ISSUE:" issue-num)]
-        (create-comment "cldwalker" "gh-waiting-room" issue-num body (gh-auth))) ))
+      (let [full-name (get-in! params ["repository" "full_name"])
+            issue-num (get-in! params ["issue" "number"])]
+        (update-issues-and-create-comment full-name issue-num))))
   {:status 200})
 
 (defon-response html-content-type
