@@ -48,7 +48,7 @@
   (->> (:issues db)
        (filter issue-filter)
        (map ->issue)
-       reverse
+       (sort-by (juxt :comments :created))
        (map-indexed (fn [num elem]
                       (assoc elem :position (inc num))))))
 
@@ -70,7 +70,6 @@
   (create-hook user name "web"
                {:url (full-url-for "/webhook") :content_type "json"}
                (assoc (gh-auth) :events ["issues"])))
-
 
 (defn create-issue-comment [db issue-id issue-num]
   (let [issue (or
