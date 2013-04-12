@@ -5,116 +5,24 @@
               [io.pedestal.service.http.route.definition :refer [defroutes]]
               [io.pedestal.service.interceptor :refer [defon-response]]
               [clostache.parser :refer [render-resource]]
-              [tentacles.issues :refer [my-issues create-comment]]
-              [tentacles.repos :refer [create-hook]]
-              clojure.string
-              [clojure.data.json :as json]
+              [gh-waiting-room.config :refer [gh-user]]
+              [gh-waiting-room.github :refer [get! get-in! create-issue-comment
+                                              viewable-issues fetch-gh-issues]]
               [ring.util.response :as ring-resp]))
 
 (def db (atom {}))
 
-(defn- gh-auth
+(defn- update-gh-issues
   []
-  {:auth (or (System/getenv "GITHUB_AUTH")
-             (throw (ex-info "Set $GITHUB_AUTH to basic auth in order fetch github issues." {})))})
+  (swap! db assoc :issues (fetch-gh-issues)))
 
-(defn- gh-user
-  []
-  (or (System/getenv "GITHUB_USER")
-      (throw (ex-info "Set $GITHUB_USER to the user who owns the issues." {}))))
-
-(defn- issue-url-regex
-  []
-  (re-pattern
-   (or (System/getenv "GITHUB_ISSUE_REGEX")
-       (str "github.com/" (gh-user)))))
-
-(def gh-hide-labels (when-let [labels (System/getenv "GITHUB_HIDE_LABELS")]
-                      (clojure.string/split labels #"\s*,\s*")))
-
-(defn- api-options
-  []
-  (merge {:filter "all" :all-pages true} (gh-auth)))
-
-; TODO: can this come from url-for?
-(defn- full-url-for [path]
-  (str (or (System/getenv "APP_DOMAIN") "http://localhost:8080") path))
-
-(defn create-webhook [user name]
-  (create-hook user name "web"
-               {:url (full-url-for "/webhook") :content_type "json"}
-               (assoc (gh-auth) :events ["issues"])))
-
-(defn get-in! [m ks]
-  (or (get-in m ks) (throw (ex-info "No value found for nested keys in map" {:map m :keys ks}))))
-
-(defn get! [m k]
-  (or (get m k) (throw (ex-info "No value found for key in map" {:map m :key k}))))
-
-(defn- issue-filter
-  [issue]
-  (and
-   (not (get-in issue [:repository :private]))
-   (re-find (issue-url-regex) (get! issue :html_url))
-   (if gh-hide-labels
-     (not (some
-           (set gh-hide-labels)
-           (map :name (:labels issue))))
-     (= [] (:labels issue)))))
-
-(defn- fetch-gh-issues
-  []
-  (swap! db assoc :issues (my-issues (api-options))))
-
-(defn- ->issue [issue]
-  {:id (format "%s#%s"
-               (get-in! issue [:repository :full_name])
-               (get! issue :number))
-   :type (if (get-in issue [:pull_request :html_url]) "pull request" "issue")
-   :url (get! issue :html_url)
-   :comments (get! issue :comments)
-   :title (get! issue :title)
-   :desc (let [body (get! issue :body)]
-           (if (re-find #"^\s*$" body)
-             ""
-             (str (re-find #"^.{0,100}(?=\s|$)" body)
-                  (if (> (count body) 100) " ..." ""))))
-   :user (get-in! issue [:repository :owner :login])
-   :name (get-in! issue [:repository :name])
-   :created (or (re-find #"\d{4}-\d\d-\d\d"(get! issue :created_at))
-                (throw (ex-info "Failed to parse date from an issue" {:issue issue})))})
-
-(defn- viewable-issues []
-  (->> (:issues @db)
-       (filter issue-filter)
-       (map ->issue)
-       reverse
-       (map-indexed (fn [num elem]
-                      (assoc elem :position (inc num))))))
 (defn home-page
   [request]
-  (when-not (seq (:issues @db)) (fetch-gh-issues))
+  (when-not (seq (:issues @db)) (update-gh-issues))
   (ring-resp/response
    (render-resource "public/index.mustache"
                     {:github-user (gh-user)
-                     :issues (viewable-issues)})))
-
-(defn- comment-body [issue]
-  (str
-   (if (= (:type issue) "pull request")
-     "Thanks for your pull request!"
-     "Thanks for reporting your issue!")
-   (format " You're [number %s in my list of open issues](%s). Use that link to check how soon your issue will be answered. Thanks for your patience."
-           (:position issue)
-           (full-url-for (str "/#" (:id issue))))))
-
-(defn- update-issues-and-create-comment [issue-id issue-num]
-  (fetch-gh-issues)
-  (let [issue (or
-               (some #(and (= (:id %) issue-id) %) (viewable-issues))
-               (throw (ex-info "No issue found for webhook" {:issue-id issue-id})))
-        body (comment-body issue)]
-    (create-comment (:user issue) (:name issue) issue-num body (gh-auth))))
+                     :issues (viewable-issues @db)})))
 
 (defn webhook-page
   [request]
@@ -124,9 +32,10 @@
         issue-num (get-in! params ["issue" "number"])
         issue-id (format "%s#%s" full-name issue-num)]
     (when (some #{action} ["created" "reopened"])
-      (update-issues-and-create-comment issue-id issue-num))
-    (when (and (= action "closed") (some #(= (:id %) issue-id) (viewable-issues)))
-      (fetch-gh-issues)))
+      (update-gh-issues)
+      (create-issue-comment @db issue-id issue-num))
+    (when (and (= action "closed") (some #(= (:id %) issue-id) (viewable-issues @db)))
+      (update-gh-issues)))
   {:status 200})
 
 (defon-response html-content-type
