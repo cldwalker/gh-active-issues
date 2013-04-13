@@ -13,6 +13,7 @@
                 (constantly [{:position "1"
                               :id "cldwalker/gh-waiting-room#1"
                               :url "https://github.com/cldwalker/gh-waiting-room/issues/1"}])
+                service/update-gh-issues (constantly nil)
                 gh-waiting-room.config/gh-user (constantly "Hal")]
     (:body (response-for service :get "/"))))
 
