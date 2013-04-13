@@ -34,3 +34,22 @@
        (body-of-home-page)
        "id=\"cldwalker/gh-waiting-room#1\" href=\"#cldwalker/gh-waiting-room#1\"")
       "Issues can be referenced by their unique id and users know of it."))
+
+(defn inc-mock-count [mocks-called key]
+  (swap! mocks-called update-in [key] (fnil inc 0)))
+
+(defn fns-called-for-webhook-page
+  [action]
+  (let [mocks-called (atom {})
+        json {"action" action
+              "repository" {"full_name" "cldwalker/some-name"}
+              "issue" {"number" "10"}}]
+    (with-redefs [service/update-gh-issues (constantly (inc-mock-count mocks-called :update-gh-issues))
+                  gh-waiting-room.github/create-issue-comment (constantly (inc-mock-count mocks-called :create-issue-comment))]
+      (service/webhook-page {:json-params json}))
+    @mocks-called))
+
+;;; Doesn't use response-for as it doesn't support :post yet
+(deftest webhook-page-test
+  (is (= (fns-called-for-webhook-page "created")
+         {:update-gh-issues 1 :create-issue-comment 1})))
