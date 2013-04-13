@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [io.pedestal.service.test :refer :all]
             [io.pedestal.service.http :as bootstrap]
+            [gh-waiting-room.github :as github]
             [gh-waiting-room.service :as service]))
 
 (def service
@@ -9,7 +10,7 @@
 
 (defn- body-of-home-page
   []
-  (with-redefs [gh-waiting-room.github/viewable-issues
+  (with-redefs [github/viewable-issues
                 (constantly [{:position "1"
                               :id "cldwalker/gh-waiting-room#1"
                               :url "https://github.com/cldwalker/gh-waiting-room/issues/1"}])
@@ -36,7 +37,8 @@
       "Issues can be referenced by their unique id and users know of it."))
 
 (defn inc-mock-count [mocks-called key]
-  (swap! mocks-called update-in [key] (fnil inc 0)))
+  (fn [& args]
+   (swap! mocks-called update-in [key] (fnil inc 0))))
 
 (defn fns-called-for-webhook-page
   [action]
@@ -44,12 +46,17 @@
         json {"action" action
               "repository" {"full_name" "cldwalker/some-name"}
               "issue" {"number" "10"}}]
-    (with-redefs [service/update-gh-issues (constantly (inc-mock-count mocks-called :update-gh-issues))
-                  gh-waiting-room.github/create-issue-comment (constantly (inc-mock-count mocks-called :create-issue-comment))]
+    (with-redefs [service/update-gh-issues (inc-mock-count mocks-called :update-gh-issues)
+                  github/create-issue-comment (inc-mock-count mocks-called :create-issue-comment)
+                  github/viewable-issues (constantly [])]
       (service/webhook-page {:json-params json}))
     @mocks-called))
 
 ;;; Doesn't use response-for as it doesn't support :post yet
 (deftest webhook-page-test
   (is (= (fns-called-for-webhook-page "created")
-         {:update-gh-issues 1 :create-issue-comment 1})))
+         {:update-gh-issues 1 :create-issue-comment 1})
+      "Updates issues and creates comment for a newly created issue")
+  (is (= (fns-called-for-webhook-page "closed")
+         {})
+      "Doesn't update issues for an inactive issue that is closed"))
