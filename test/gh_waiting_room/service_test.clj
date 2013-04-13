@@ -7,12 +7,29 @@
 (def service
   (::bootstrap/service-fn (bootstrap/create-servlet service/service)))
 
-(deftest home-page-test
-  (is (=
-       (:body (response-for service :get "/"))
-       "Hello World!")))
+(defn- body-of-home-page
+  []
+  (with-redefs [gh-waiting-room.github/viewable-issues
+                (constantly [{:position "1"
+                              :id "cldwalker/gh-waiting-room#1"
+                              :url "https://github.com/cldwalker/gh-waiting-room/issues/1"}])
+                gh-waiting-room.config/gh-user (constantly "Hal")]
+    (:body (response-for service :get "/"))))
 
-(deftest about-page-test
+(deftest home-page-test
   (is (.contains
-       (:body (response-for service :get "/about"))
-       "Clojure 1.5")))
+       (body-of-home-page)
+       "<h1>Hal's Github Waiting Room</h1>")
+      "Owner of issues is clearly shown.")
+  (is (.contains
+       (body-of-home-page)
+       "href=\"https://github.com/cldwalker/gh-waiting-room/issues/1\"")
+      "Issues link back to their origin.")
+  (is (.contains
+       (body-of-home-page)
+       "id=\"issue_1\"")
+      "Issues can be referenced by position.")
+  (is (.contains
+       (body-of-home-page)
+       "id=\"cldwalker/gh-waiting-room#1\" href=\"#cldwalker/gh-waiting-room#1\"")
+      "Issues can be referenced by their unique id and users know of it."))
