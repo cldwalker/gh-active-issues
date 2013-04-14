@@ -8,15 +8,30 @@
 (def service
   (::bootstrap/service-fn (bootstrap/create-servlet service/service)))
 
+(defn fail-request!
+  [{:keys [uri server-name server-port query-string scheme]}]
+  (throw (ex-info (format "Unexpected request %s. Web requests are not allowed in this test."
+                          (str (name scheme) "://" server-name
+                               (when server-port (str ":" server-port))
+                               uri
+                               (when query-string (str "?" query-string))))
+                  {})))
+
+(defmacro disallow-web-requests!
+  [& body]
+  `(with-redefs [clj-http.core/request fail-request!]
+     ~@body))
+
 (defn body-of-home-page
   []
-  (with-redefs [github/viewable-issues
-                (constantly [{:position "1"
-                              :id "cldwalker/gh-waiting-room#1"
-                              :url "https://github.com/cldwalker/gh-waiting-room/issues/1"}])
-                service/update-gh-issues (constantly nil)
-                gh-waiting-room.config/gh-user (constantly "Hal")]
-    (:body (response-for service :get "/"))))
+  (disallow-web-requests!
+   (with-redefs [github/viewable-issues
+                 (constantly [{:position "1"
+                               :id "cldwalker/gh-waiting-room#1"
+                               :url "https://github.com/cldwalker/gh-waiting-room/issues/1"}])
+                 service/update-gh-issues (constantly nil)
+                 gh-waiting-room.config/gh-user (constantly "Hal")]
+     (:body (response-for service :get "/")))))
 
 (deftest home-page-test
   (let [body (body-of-home-page)]
@@ -43,18 +58,19 @@
 
 (defn fns-called-for-webhook-page
   [action & options]
-  (let [{:keys [issues full-name]
-         :or {issues [{:id "cldwalker/something"}]
-              full-name "cldwalker/stub"}} options
-        mocks-called (atom {})
-        json {"action" action
-              "repository" {"full_name" full-name}
-              "issue" {"number" "1"}}]
-    (with-redefs [service/update-gh-issues (inc-mock-count mocks-called :update-gh-issues)
-                  github/create-issue-comment (inc-mock-count mocks-called :create-issue-comment)
-                  github/viewable-issues (constantly issues)]
-      (service/webhook-page {:json-params json}))
-    @mocks-called))
+  (disallow-web-requests!
+   (let [{:keys [issues full-name]
+          :or {issues [{:id "cldwalker/something"}]
+               full-name "cldwalker/stub"}} options
+               mocks-called (atom {})
+               json {"action" action
+                     "repository" {"full_name" full-name}
+                     "issue" {"number" "1"}}]
+     (with-redefs [service/update-gh-issues (inc-mock-count mocks-called :update-gh-issues)
+                   github/create-issue-comment (inc-mock-count mocks-called :create-issue-comment)
+                   github/viewable-issues (constantly issues)]
+       (service/webhook-page {:json-params json}))
+     @mocks-called)))
 
 ;;; Doesn't use response-for as it doesn't support :post yet
 (deftest webhook-page-test
