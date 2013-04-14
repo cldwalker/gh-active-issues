@@ -42,14 +42,17 @@
    (swap! mocks-called update-in [key] (fnil inc 0))))
 
 (defn fns-called-for-webhook-page
-  [action]
-  (let [mocks-called (atom {})
+  [action & options]
+  (let [{:keys [issues full-name]
+         :or {issues [{:id "cldwalker/something"}]
+              full-name "cldwalker/stub"}} options
+        mocks-called (atom {})
         json {"action" action
-              "repository" {"full_name" "cldwalker/some-name"}
-              "issue" {"number" "10"}}]
+              "repository" {"full_name" full-name}
+              "issue" {"number" "1"}}]
     (with-redefs [service/update-gh-issues (inc-mock-count mocks-called :update-gh-issues)
                   github/create-issue-comment (inc-mock-count mocks-called :create-issue-comment)
-                  github/viewable-issues (constantly [])]
+                  github/viewable-issues (constantly issues)]
       (service/webhook-page {:json-params json}))
     @mocks-called))
 
@@ -60,4 +63,9 @@
       "Updates issues and creates comment for a newly created issue")
   (is (= (fns-called-for-webhook-page "closed")
          {})
-      "Doesn't update issues for an inactive issue that is closed"))
+      "Doesn't update issues for an inactive issue that is closed")
+  (is (= (fns-called-for-webhook-page "closed"
+                                      :full-name "cldwalker/repo"
+                                      :issues [{:id "cldwalker/repo#1"}] )
+         {:update-gh-issues 1})
+      "Updates issues for an active issue that is closed"))
