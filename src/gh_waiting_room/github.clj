@@ -57,7 +57,7 @@
    (if (= (:type issue) "pull request")
      "Thanks for your pull request!"
      "Thanks for reporting your issue!")
-   (format " You're [number %s in my list of open issues](%s). Use that link to check how soon your issue will be answered. Thanks for your patience."
+   (format " You're [#%s in my list of open issues](%s). Use that link to check how soon your issue will be answered. Thanks for your patience."
            (:position issue)
            (full-url-for (str "/#" (:id issue))))))
 
