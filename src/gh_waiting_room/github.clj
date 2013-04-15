@@ -1,6 +1,6 @@
 (ns gh-waiting-room.github
   (:require [tentacles.issues :refer [my-issues create-comment]]
-            [tentacles.repos :refer [create-hook]]
+            [tentacles.repos :refer [create-hook hooks]]
             [gh-waiting-room.config :refer [gh-auth issue-url-regex gh-hide-labels app-domain]]))
 
 ;;; util fns
@@ -70,6 +70,12 @@
   (create-hook user name "web"
                {:url (full-url-for "/webhook") :content_type "json"}
                (assoc (gh-auth) :events ["issues"])))
+
+(defn list-hooks [user name]
+  (->>
+   (hooks user name (gh-auth))
+   (map (fn [h]
+          {:url (get-in! h [:config :url]) :id (:id h)}))))
 
 (defn create-issue-comment [db issue-id issue-num]
   (let [issue (or
