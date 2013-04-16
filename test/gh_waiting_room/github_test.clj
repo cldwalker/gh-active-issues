@@ -34,3 +34,18 @@
   (testing "creates comment for pull request with correct body intro"
     (create-comment :issues [(assoc valid-issue :type "pull request")]
                     :body-expects #(re-find #"^Thanks for your pull" %))))
+
+(deftest viewable-issues-test
+  (testing "desc shortened to first 100")
+  (testing "desc ends with word if over 100 char")
+  (testing "desc ends with word at or under 100 char")
+  (testing "fails with get-in! if fetched issue doesn't have :full_name")
+  (testing "fails with get! if fetched issue doesn't have :url")
+  (testing "fails if fetched issue doesn't have valid :created_at")
+  (testing "filters out issues with labels by default")
+  (testing "filters out issues with specific labels when $GITHUB_HIDE_LABELS set")
+  (testing "filters out private")
+  (testing "filters out repositories with $GITHUB_ISSUE_REGEX")
+  (testing "filters out")
+  (testing "sorts issues by coments and then created")
+  (testing "adds :position by list order"))
