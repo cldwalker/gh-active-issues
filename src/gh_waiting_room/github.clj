@@ -76,7 +76,7 @@
   (->>
    (hooks user name (gh-auth))
    (map (fn [h]
-          {:url (get-in! h [:config :url]) :id (:id h)}))))
+          {:url (get-in h [:config :url]) :id (:id h) :name (:name h)}))))
 
 (defn list-repos
   []
