@@ -40,7 +40,8 @@
              ""
              (str (re-find #"^.{0,100}(?=\s|$)" body)
                   (if (> (count body) 100) " ..." ""))))
-   :user (get-in! issue [:repository :owner :login])
+   :owner (get-in! issue [:repository :owner :login])
+   :user (get-in! issue [:user :login])
    :name (get-in! issue [:repository :name])
    :created (or (re-find #"\d{4}-\d\d-\d\d"(get! issue :created_at))
                 (throw (ex-info "Failed to parse date from an issue" {:issue issue})))})
@@ -100,4 +101,4 @@
                (some #(and (= (:id %) issue-id) %) (viewable-issues db))
                (throw (ex-info "No issue found for webhook" {:issue-id issue-id})))
         body (comment-body issue)]
-    (create-comment (:user issue) (:name issue) issue-num body (gh-auth))))
+    (create-comment (:owner issue) (:name issue) issue-num body (gh-auth))))
