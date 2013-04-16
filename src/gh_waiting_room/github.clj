@@ -1,7 +1,8 @@
 (ns gh-waiting-room.github
   (:require [tentacles.issues :refer [my-issues create-comment]]
             [tentacles.repos :refer [create-hook hooks repos]]
-            [gh-waiting-room.config :refer [gh-auth issue-url-regex gh-hide-labels app-domain]]))
+            [gh-waiting-room.config :refer [gh-auth issue-url-regex gh-hide-labels
+                                            app-domain gh-user]]))
 
 ;;; util fns
 ; TODO: can this come from url-for?
@@ -84,6 +85,15 @@
     (->> all-repos
          (filter filter-fn)
          (map :name))))
+
+(defn create-all-webhooks
+  "Creates webhooks for all repositories that don't have one in $APP_DOMAIN"
+  []
+  (let [repos (map #(array-map :name % :hooks (list-hooks (gh-user) %)) (list-repos))
+        has-webhook (fn [repo] (some #(= (full-url-for "/webhook") (:url %)) (:hooks repo)))
+        new-repos (remove has-webhook repos)]
+    (doseq [repo new-repos]
+      (create-webhook (gh-user) (:name repo)))))
 
 (defn create-issue-comment [db issue-id issue-num]
   (let [issue (or
