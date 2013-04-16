@@ -1,6 +1,6 @@
 (ns gh-waiting-room.github
   (:require [tentacles.issues :refer [my-issues create-comment]]
-            [tentacles.repos :refer [create-hook hooks]]
+            [tentacles.repos :refer [create-hook hooks repos]]
             [gh-waiting-room.config :refer [gh-auth issue-url-regex gh-hide-labels app-domain]]))
 
 ;;; util fns
@@ -76,6 +76,14 @@
    (hooks user name (gh-auth))
    (map (fn [h]
           {:url (get-in! h [:config :url]) :id (:id h)}))))
+
+(defn list-repos
+  []
+  (let [all-repos (repos (assoc (gh-auth) :type "public" :all-pages true))
+        filter-fn (if (System/getenv "GITHUB_ACTIVATE_FORKS") identity :fork)]
+    (->> all-repos
+         (filter filter-fn)
+         (map :name))))
 
 (defn create-issue-comment [db issue-id issue-num]
   (let [issue (or
