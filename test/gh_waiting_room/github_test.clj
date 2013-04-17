@@ -4,7 +4,7 @@
             [gh-waiting-room.github :as github]
             [echo.test.mock :refer [expect has-args times once]]))
 
-(def valid-issue {:id "cldwalker/repo#10" :user "cldwalker" :name "repo" :type "issue" :position 10})
+(def valid-issue {:id "cldwalker/repo#10" :owner "cldwalker" :name "repo" :type "issue" :position 10})
 
 (defn create-comment
   [& {:keys [id issues body-expects]
