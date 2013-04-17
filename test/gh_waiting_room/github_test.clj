@@ -67,9 +67,15 @@
     (is (thrown? clojure.lang.ExceptionInfo
                  (->issue
                   (assoc valid-gh-issue :created_at "2013-01")))))
-  (testing "desc shortened to first 100")
-  (testing "desc ends with word if over 100 char")
-  (testing "desc ends with word at or under 100 char"))
+  (testing "desc handles whitespace-only string"
+    (is (= (:desc (->issue (assoc valid-gh-issue :body "  ")))
+           "  ")))
+  (testing "desc remains the same if under 100"
+    (is (= (:desc (->issue (assoc valid-gh-issue :body "SHORT")))
+           "SHORT")))
+  (testing "desc ends with word and shortened correctly if over 100 char"
+    (is (= (:desc (->issue (assoc valid-gh-issue :body (str (apply str (repeat 98 "A")) " BBBB"))))
+           (str (apply str (repeat 98 "A")) " ...")))))
 
 #_(deftest viewable-issues-test
   (testing "filters out issues with labels by default")

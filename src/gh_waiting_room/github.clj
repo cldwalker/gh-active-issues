@@ -36,10 +36,8 @@
    :comments (get! issue :comments)
    :title (get! issue :title)
    :desc (let [body (get! issue :body)]
-           (if (re-find #"^\s*$" body)
-             ""
-             (str (re-find #"^.{0,100}(?=\s|$)" body)
-                  (if (> (count body) 100) " ..." ""))))
+           (str (re-find #"^.{0,100}(?=\s|$)" body)
+                (if (> (count body) 100) " ..." "")))
    :owner (get-in! issue [:repository :owner :login])
    :user (get-in! issue [:user :login])
    :name (get-in! issue [:repository :name])
