@@ -35,18 +35,20 @@
     (create-comment :issues [(assoc valid-issue :type "pull request")]
                     :body-expects #(re-find #"^Thanks for your pull" %))))
 
-(def valid-gh-issue {:repository {:full_name "cldwalker/faceplant"
-                               :name "faceplant"
-                               :owner {:login "cldwalker"}}
-                  :user {:login "call_me_faceplant"}
-                  ;; https://github.com/cldwalker/faceplant/pull/27
-                  :pull_request {:html_url nil :diff_url nil :patch_url nil}
-                  :html_url "https://github.com/cldwalker/faceplant/issues/27"
-                  :number 27
-                  :comments 0
-                  :created_at "2013-04-12T21:05:28Z"
-                  :title "So I faceplanted"
-                  :body "And I really didn't like it."})
+(def valid-gh-issue
+  {:repository {:full_name "cldwalker/faceplant"
+                :name "faceplant"
+                :owner {:login "cldwalker"}}
+   :user {:login "call_me_faceplant"}
+   ;; https://github.com/cldwalker/faceplant/pull/27
+   :pull_request {:html_url nil :diff_url nil :patch_url nil}
+   :html_url "https://github.com/cldwalker/faceplant/issues/27"
+   :number 27
+   :comments 0
+   :labels []
+   :created_at "2013-04-12T21:05:28Z"
+   :title "So I faceplanted"
+   :body "And I really didn't like it."})
 
 (deftest ->issue-test
   (testing "it converts issue map correctly"
@@ -76,6 +78,26 @@
   (testing "desc ends with word and shortened correctly if over 100 char"
     (is (= (:desc (->issue (assoc valid-gh-issue :body (str (apply str (repeat 98 "A")) " BBBB"))))
            (str (apply str (repeat 98 "A")) " ...")))))
+
+(defn issue-with-name-and-private
+  [name private]
+  (-> valid-gh-issue
+      (update-in [:repository :private] (constantly private))
+      (update-in [:repository :name] (constantly name))))
+
+(defn viewable-issues
+  [db]
+  (with-redefs [gh-waiting-room.config/gh-user (constantly "cldwalker")]
+    (github/viewable-issues db)))
+
+(deftest issue-filter-test
+  (testing "public and unspecified :private issues come through"
+    (is (= (->> {:issues [(issue-with-name-and-private "faceplant-public" false)
+                       valid-gh-issue
+                       (issue-with-name-and-private "faceplant-private" true)]}
+             viewable-issues
+             (map :name))
+        ["faceplant-public" "faceplant"]))))
 
 #_(deftest viewable-issues-test
   (testing "filters out issues with labels by default")
