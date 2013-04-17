@@ -27,7 +27,7 @@
            (map :name (:labels issue))))
      (= [] (:labels issue)))))
 
-(defn- ->issue [issue]
+(defn ->issue [issue]
   {:id (format "%s#%s"
                (get-in! issue [:repository :full_name])
                (get! issue :number))
