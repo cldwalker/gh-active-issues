@@ -1,26 +1,13 @@
 (ns gh-waiting-room.service-test
   (:require [clojure.test :refer :all]
             [io.pedestal.service.test :refer :all]
+            [gh-waiting-room.test-helper :refer [disallow-web-requests!]]
             [io.pedestal.service.http :as bootstrap]
             [gh-waiting-room.github :as github]
             [gh-waiting-room.service :as service]))
 
 (def service
   (::bootstrap/service-fn (bootstrap/create-servlet service/service)))
-
-(defn fail-request!
-  [{:keys [uri server-name server-port query-string scheme]}]
-  (throw (ex-info (format "Unexpected request %s. Web requests are not allowed in this test."
-                          (str (name scheme) "://" server-name
-                               (when server-port (str ":" server-port))
-                               uri
-                               (when query-string (str "?" query-string))))
-                  {})))
-
-(defmacro disallow-web-requests!
-  [& body]
-  `(with-redefs [clj-http.core/request fail-request!]
-     ~@body))
 
 (defn body-of-home-page
   []

@@ -1,6 +1,7 @@
 (ns gh-waiting-room.github-test
   (:require [clojure.test :refer :all]
             tentacles.issues
+            [gh-waiting-room.test-helper :refer [disallow-web-requests!]]
             [gh-waiting-room.config :as config]
             [gh-waiting-room.github :as github :refer [->issue]]
             [echo.test.mock :refer [expect has-args times once]]))
@@ -12,12 +13,13 @@
       :or {id "cldwalker/repo#10"
            body-expects (constantly true)
            issues [valid-issue]}}]
-  (expect [tentacles.issues/create-comment
-           (->>
-            (has-args ["cldwalker" "repo" 10 body-expects])
-            (times once))]
-          (with-redefs [github/viewable-issues (constantly issues)]
-            (github/create-issue-comment {} id 10))))
+  (disallow-web-requests!
+   (expect [tentacles.issues/create-comment
+            (->>
+             (has-args ["cldwalker" "repo" 10 body-expects])
+             (times once))]
+           (with-redefs [github/viewable-issues (constantly issues)]
+             (github/create-issue-comment {} id 10)))))
 
 (deftest create-issue-comment-test
   (testing "creates comment with correct user and name"
