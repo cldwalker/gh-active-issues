@@ -21,9 +21,9 @@
   (and
    (not (get-in issue [:repository :private]))
    (re-find (issue-url-regex) (get! issue :html_url))
-   (if gh-hide-labels
+   (if-let [labels (gh-hide-labels)]
      (not (some
-           (set gh-hide-labels)
+           (set labels)
            (map :name (:labels issue))))
      (= [] (:labels issue)))))
 

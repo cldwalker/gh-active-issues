@@ -103,8 +103,15 @@
              viewable-issues
              (map :name))
            ["faceplant-public" "faceplant"])))
-  
-  (testing "filters out repositories with regular expression by default"
+
+  (testing "filters out repositories with user name by default i.e. no $GITHUB_ISSUE_REGEX"
+    (is (= (->> {:issues [valid-gh-issue
+                          (create-issue "pedestal" :html_url "https://github.com/pedestal/pedestal/issues/27")
+                          (create-issue "ripl-multi_line" :html_url "https://github.com/janlelis/ripl-multi_line/issues/27")]}
+                viewable-issues
+                (map :name))
+           ["faceplant"])))
+  (testing "filters out repositories with $GITHUB_ISSUE_REGEX"
     (is (= (->> {:issues [valid-gh-issue
                           (create-issue "pedestal" :html_url "https://github.com/pedestal/pedestal/issues/27")
                           (create-issue "ripl-multi_line" :html_url "https://github.com/janlelis/ripl-multi_line/issues/27")]}
@@ -112,12 +119,12 @@
                     (github/viewable-issues %)))
                 (map :name))
            ["faceplant" "ripl-multi_line"])))
-  (testing "filters out repositories with gh-hide-labels"
+  (testing "filters out repositories with $GITHUB_HIDE_LABELS"
     (is (= (->> {:issues [(create-issue "bug-repo" :labels [{:name "bug"}])
                           valid-gh-issue
                           (create-issue "enhancement-repo" :labels [{:name "enhancement"} {:name "old"}])
                           (create-issue "label-free-repo")]}
-                (#(with-redefs [config/gh-hide-labels ["bug" "enhancement"]]
+                (#(with-redefs [config/getenv (constantly "bug, enhancement")]
                     (viewable-issues %)))
                 (map :name))
            ["faceplant" "label-free-repo"])))

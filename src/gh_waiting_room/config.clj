@@ -1,6 +1,11 @@
 (ns gh-waiting-room.config
   (:require clojure.string))
 
+(defn getenv
+  "Sit in front of System/getenv for mocking, ugh"
+  [env]
+  (System/getenv env))
+
 (defn gh-auth
   []
   {:auth (or (System/getenv "GITHUB_AUTH")
@@ -17,8 +22,10 @@
    (or (System/getenv "GITHUB_ISSUE_REGEX")
        (str "github.com/" (gh-user)))))
 
-(def gh-hide-labels (when-let [labels (System/getenv "GITHUB_HIDE_LABELS")]
-                      (clojure.string/split labels #"\s*,\s*")))
+(defn gh-hide-labels
+  []
+  (when-let [labels (getenv "GITHUB_HIDE_LABELS")]
+    (clojure.string/split labels #"\s*,\s*")))
 
 (defn app-domain
   []
