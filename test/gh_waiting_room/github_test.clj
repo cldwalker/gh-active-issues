@@ -1,7 +1,7 @@
 (ns gh-waiting-room.github-test
   (:require [clojure.test :refer :all]
             tentacles.issues
-            gh-waiting-room.config
+            [gh-waiting-room.config :as config]
             [gh-waiting-room.github :as github :refer [->issue]]
             [echo.test.mock :refer [expect has-args times once]]))
 
@@ -90,14 +90,14 @@
 
 (defn viewable-issues
   [db]
-  (with-redefs [gh-waiting-room.config/gh-user (constantly "cldwalker")]
+  (with-redefs [config/gh-user (constantly "cldwalker")]
     (github/viewable-issues db)))
 
 (deftest issue-filter-test
   (testing "filters out private and allows public and unspecified :private issues"
     (is (= (->> {:issues [(create-issue "faceplant-public" :private false)
-                       valid-gh-issue
-                       (create-issue "faceplant-private" :private true)]}
+                          valid-gh-issue
+                          (create-issue "faceplant-private" :private true)]}
              viewable-issues
              (map :name))
            ["faceplant-public" "faceplant"])))
@@ -106,14 +106,40 @@
     (is (= (->> {:issues [valid-gh-issue
                           (create-issue "pedestal" :html_url "https://github.com/pedestal/pedestal/issues/27")
                           (create-issue "ripl-multi_line" :html_url "https://github.com/janlelis/ripl-multi_line/issues/27")]}
-                (#(with-redefs [gh-waiting-room.config/gh-user (constantly "(cldwalker|janlelis)")]
+                (#(with-redefs [config/gh-user (constantly "(cldwalker|janlelis)")]
                     (github/viewable-issues %)))
                 (map :name))
            ["faceplant" "ripl-multi_line"])))
+  (testing "filters out repositories with gh-hide-labels"
+    (is (= (->> {:issues [(create-issue "bug-repo" :labels [{:name "bug"}])
+                          valid-gh-issue
+                          (create-issue "enhancement-repo" :labels [{:name "enhancement"} {:name "old"}])
+                          (create-issue "label-free-repo")]}
+                (#(with-redefs [config/gh-hide-labels ["bug" "enhancement"]]
+                    (viewable-issues %)))
+                (map :name))
+           ["faceplant" "label-free-repo"])))
+  (testing "filters out repositories with labels by default i.e. when gh-hide-labels not set"
+    (is (= (->> {:issues [(create-issue "old-repo" :labels [{:name "old"}])
+                          valid-gh-issue
+                          (create-issue "inactive-repo" :labels [{:name "enhancement"} {:name "inactive"}])]}
+                viewable-issues
+                (map :name))
+           ["faceplant"])))
 )
 
-#_(deftest viewable-issues-test
-  (testing "filters out issues with specific labels when $GITHUB_HIDE_LABELS set")
-  (testing "filters out issues with labels by default") 
-  (testing "sorts issues by coments and then created")
-  (testing "adds :position by list order"))
+(deftest viewable-issues-test
+  (testing "sorts issues by coments and then created"
+    (is (= (->> {:issues [(create-issue "most-comments" :comments 7 :created_at "2013-03-13")
+                          (create-issue "unanswered" :comments 0 :created_at "2013-01-10")
+                          (create-issue "another-unanswered" :comments 0 :created_at "2013-04-01")]}
+                viewable-issues
+                (map :name))
+           ["unanswered" "another-unanswered" "most-comments"])))
+  (testing "adds :position by list order"
+    (is (= (->> {:issues [(create-issue "most-comments" :comments 7 :created_at "2013-03-13")
+                          (create-issue "unanswered" :comments 0 :created_at "2013-01-10")
+                          (create-issue "another-unanswered" :comments 0 :created_at "2013-04-01")]}
+                viewable-issues
+                (map :position))
+           [1 2 3]))))
