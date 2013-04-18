@@ -1,6 +1,7 @@
 (ns gh-waiting-room.github-test
   (:require [clojure.test :refer :all]
             tentacles.issues
+            gh-waiting-room.config
             [gh-waiting-room.github :as github :refer [->issue]]
             [echo.test.mock :refer [expect has-args times once]]))
 
@@ -79,11 +80,13 @@
     (is (= (:desc (->issue (assoc valid-gh-issue :body (str (apply str (repeat 98 "A")) " BBBB"))))
            (str (apply str (repeat 98 "A")) " ...")))))
 
-(defn issue-with-name-and-private
-  [name private]
-  (-> valid-gh-issue
-      (update-in [:repository :private] (constantly private))
-      (update-in [:repository :name] (constantly name))))
+(defn create-issue
+  [name & {:keys [private] :as options}]
+  (let [issue (update-in valid-gh-issue [:repository :name] (constantly name))
+        issue (if (contains? options :private)
+                (update-in issue [:repository :private] (constantly private))
+                issue)]
+    (merge issue (dissoc options :private))))
 
 (defn viewable-issues
   [db]
@@ -91,19 +94,26 @@
     (github/viewable-issues db)))
 
 (deftest issue-filter-test
-  (testing "public and unspecified :private issues come through"
-    (is (= (->> {:issues [(issue-with-name-and-private "faceplant-public" false)
+  (testing "filters out private and allows public and unspecified :private issues"
+    (is (= (->> {:issues [(create-issue "faceplant-public" :private false)
                        valid-gh-issue
-                       (issue-with-name-and-private "faceplant-private" true)]}
+                       (create-issue "faceplant-private" :private true)]}
              viewable-issues
              (map :name))
-        ["faceplant-public" "faceplant"]))))
+           ["faceplant-public" "faceplant"])))
+  
+  (testing "filters out repositories with regular expression by default"
+    (is (= (->> {:issues [valid-gh-issue
+                          (create-issue "pedestal" :html_url "https://github.com/pedestal/pedestal/issues/27")
+                          (create-issue "ripl-multi_line" :html_url "https://github.com/janlelis/ripl-multi_line/issues/27")]}
+                (#(with-redefs [gh-waiting-room.config/gh-user (constantly "(cldwalker|janlelis)")]
+                    (github/viewable-issues %)))
+                (map :name))
+           ["faceplant" "ripl-multi_line"])))
+)
 
 #_(deftest viewable-issues-test
-  (testing "filters out issues with labels by default")
   (testing "filters out issues with specific labels when $GITHUB_HIDE_LABELS set")
-  (testing "filters out private")
-  (testing "filters out repositories with $GITHUB_ISSUE_REGEX")
-  (testing "filters out")
+  (testing "filters out issues with labels by default") 
   (testing "sorts issues by coments and then created")
   (testing "adds :position by list order"))
