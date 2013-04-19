@@ -76,7 +76,7 @@ and issues the public can see:
   hides issues with those labels. Useful when labels indicate issues
   that you're not actively working on but have left open. If nothing
   is specified, the default is to hide issues with any labels.
-* $APP_DOMAIN - This is required if you're using the auto-commenting.
+* $GITHUB_APP_DOMAIN - This is required if you're using the auto-commenting.
   This should be the full domain of your app and will be used mainly
   for link generation.
 

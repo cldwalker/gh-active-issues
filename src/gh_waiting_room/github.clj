@@ -85,8 +85,9 @@
          (filter filter-fn)
          (map :name))))
 
+;;; TODO
 (defn create-all-webhooks
-  "Creates webhooks for all repositories that don't have one in $APP_DOMAIN"
+  "Creates webhooks for all repositories that don't have one in $GITHUB_APP_DOMAIN"
   []
   (let [repos (map #(array-map :name % :hooks (list-hooks (gh-user) %)) (list-repos))
         has-webhook (fn [repo] (some #(= (full-url-for "/webhook") (:url %)) (:hooks repo)))
