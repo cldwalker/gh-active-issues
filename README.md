@@ -25,7 +25,7 @@ The second and third features are enabled per repository using service
 hooks. To see these features in action feel free to open/close an
 issue on
 [this repository](https://github.com/cldwalker/gh-waiting-room/issues).
-To set up service hooks see [comment-bot](#comment-bot).
+To set up service hooks see [service-hooks](#service-hooks).
 
 ## Running the App
 
@@ -45,6 +45,18 @@ $ heroku config:set GITHUB_AUTH=my-auth GITHUB_USER=my-name
 $ git push heroku master
 $ heroku open
 ```
+
+## Service Hooks
+
+In order to use [features](#features) 2 and 3, you need service
+hooks on your repositories. Here are the commands to use:
+
+* To create a hook for just one repository: `lein gh-create-hook user/repo`
+* To create hooks for all your original repositories: `lein
+  gh-create-hook :all`
+* To list your hooks: `lein gh-hooks`
+* To delete a hook for just one repository: `lein gh-delete-hook user/repo`
+* To delete all hooks: `lein gh-delete-hook :all`
 
 ## Configuration
 
@@ -70,13 +82,13 @@ and issues the public can see:
 
 ## Who this is for
 
-If you're a user or organization who does any of the following:
+If you're a maintainer or organization who does any of the following:
 * strives to respond to all their issues
 * treats all their active repositories equally and runs through issues in the
   order they are created
 * likes to leave issues open for others but has no intention of
   working on them (use labels and $GITHUB_HIDE_LABELS)
-* likes to only see a subset of all repositories' issues (use
+* likes to only see issues from a subset of all repositories (use
   $GITHUB_ISSUE_REGEX)
 
 then this is for you.
