@@ -1,7 +1,8 @@
 (ns gh-waiting-room.github-tasks
   (:require [table.core :refer [table]]
             clojure.string
-            [gh-waiting-room.github :refer [all-hooks create-all-webhooks]]))
+            [gh-waiting-room.github :refer [all-hooks create-all-webhooks
+                                            create-webhook delete-webhook]]))
 
 (defn print-hooks []
   (println "Fetching hooks...")
@@ -16,16 +17,24 @@
   (println msg)
   (System/exit 1))
 
-(defn create-hooks [arg]
+(defn create-hooks [args]
   (when-not (System/getenv "GITHUB_APP_DOMAIN")
     (abort "$GITHUB_APP_DOMAIN must be set to use this subcommand"))
-  (case arg
-    ":all" (create-all-webhooks)
-    (abort "Usage: lein github create-hook [:all|user/repo]")))
+  (if (= ":all" (first args))
+    (create-all-webhooks)
+    (if (= 2 (count args))
+      (apply create-webhook args)
+      (abort "Usage: lein github create-hook [:all|USER REPO]"))))
 
-(defn -main [& [cmd arg]]
+(defn delete-hooks [args]
+  (when-not (= 3 (count args))
+    (abort "Usage: lein github delete-hook USER REPO ID"))
+  (apply delete-webhook args))
+
+(defn -main [& [cmd & args]]
   (case cmd
     "hooks" (print-hooks)
-    "create-hook" (create-hooks arg)
+    "create-hook" (create-hooks args)
+    "delete-hook" (delete-hooks args)
     (abort "Usage: lein github [hooks|create-hook|delete-hook]"))
   (System/exit 0))

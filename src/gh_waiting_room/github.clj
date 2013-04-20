@@ -105,7 +105,8 @@
 
 (defn delete-webhook
   [user name id]
-  (delete-hook user name id (gh-auth)))
+  (when (delete-hook user name id (gh-auth))
+    (println (format "Deleted webhook for %s/%s" user name))))
 
 (defn create-all-webhooks
   "Creates webhooks for all repositories that don't have one in $GITHUB_APP_DOMAIN"
