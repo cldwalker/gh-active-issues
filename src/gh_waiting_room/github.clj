@@ -93,7 +93,7 @@
 
 (defn list-repos-with-hooks
   []
-  (map #(assoc % :hooks (repo-hooks (:owner %) (:name %))) (take 10 (list-repos))))
+  (map #(assoc % :hooks (repo-hooks (:owner %) (:name %))) (list-repos)))
 
 (defn all-hooks
   "List hooks by repository for all public repositories with hooks"
@@ -113,7 +113,7 @@
   []
   (let [has-gh-webhook #(some #{(full-url-for "/webhook")} (map :url (:hooks %)))
         repos (remove has-gh-webhook (list-repos-with-hooks))]
-    (doseq [repo (take 1 repos)]
+    (doseq [repo repos]
       (create-webhook (:owner repo) (:name repo)))))
 
 (defn create-issue-comment [db issue-id issue-num]
