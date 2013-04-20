@@ -51,13 +51,14 @@ $ heroku open
 In order to use [features](#features) 2 and 3, you need service
 hooks on your repositories. Here are the commands to use:
 
-* To create a hook for just one repository: `lein gh-create-hook user/repo`
-* To create hooks for all your original repositories: `lein
-  gh-create-hook :all`
-* To list your hooks (*caution: one API call per repository*): `lein
-  github hooks`
-* To delete a hook for just one repository: `lein gh-delete-hook user/repo`
-* To delete all hooks: `lein gh-delete-hook :all`
+* To create a hook for just one repository:
+  `GITHUB_APP_DOMAIN=my-domain lein github create-hook USER REPO`
+* To create hooks for all your original repositories:
+  `GITHUB_APP_DOMAIN=my-domain lein github create-hook :all`
+* To list your hooks (*caution: one API call per repository*):
+  `lein github hooks`
+* To delete a hook for just one repository:
+  `lein github delete-hook USER REPO ID`
 
 ## Configuration
 
