@@ -12,7 +12,12 @@
     (table hooks)
     (println (format "%s rows in set" (count hooks)))))
 
+(defn abort [msg]
+  (println msg)
+  (System/exit 1))
+
 (defn -main [& [cmd arg]]
   (case cmd
     "hooks" (print-hooks)
-    (println "Usage: lein github [hooks|create-hook|delete-hook]")))
+    (abort "Usage: lein github [hooks|create-hook|delete-hook]"))
+  (System/exit 0))
