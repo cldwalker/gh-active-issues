@@ -4,6 +4,7 @@
             [gh-waiting-room.github :refer [all-hooks]]))
 
 (defn print-hooks []
+  (println "Fetching hooks...")
   (let [hooks (->> (all-hooks)
                    ;; convert to subvectors for table ordering
                    (map #(vec [(:name %) (:owner %) (clojure.string/join "," (:hooks %))]))
