@@ -57,6 +57,8 @@ hooks on your repositories. Here are the commands to use:
   `GITHUB_APP_DOMAIN=my-domain lein github create-hook :all`
 * To list your hooks (*caution: one API call per repository*):
   `lein github hooks`
+* To list more about hooks for one repository:
+  `lein github hooks USER REPO`
 * To delete a hook for just one repository:
   `lein github delete-hook USER REPO ID`
 

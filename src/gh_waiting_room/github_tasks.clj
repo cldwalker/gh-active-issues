@@ -2,7 +2,12 @@
   (:require [table.core :refer [table]]
             clojure.string
             [gh-waiting-room.github :refer [all-hooks create-all-webhooks
-                                            create-webhook delete-webhook]]))
+                                            create-webhook delete-webhook
+                                            repo-hooks]]))
+
+(defn vec-table [rows]
+  (table rows)
+  (println (format "%s rows in set" (dec (count rows)))))
 
 (defn print-hooks []
   (println "Fetching hooks...")
@@ -10,8 +15,14 @@
                    ;; convert to subvectors for table ordering
                    (map #(vec [(:name %) (:owner %) (clojure.string/join "," (:hooks %))]))
                    (cons [:name :owner :hooks]))]
-    (table hooks)
-    (println (format "%s rows in set" (count hooks)))))
+    (vec-table hooks)))
+
+(defn print-repo-hooks [[user repo]]
+  (let [hooks (->>
+               (repo-hooks user repo)
+               (map (juxt :id :url :name))
+               (cons [:id :url :name]))]
+    (vec-table hooks)))
 
 (defn abort [msg]
   (println msg)
@@ -31,9 +42,15 @@
     (abort "Usage: lein github delete-hook USER REPO ID"))
   (apply delete-webhook args))
 
+(defn list-hooks [args]
+  (case (count args)
+    0 (print-hooks)
+    2 (print-repo-hooks args)
+    (abort "Usage: lein github hooks <USER> <REPO>")))
+
 (defn -main [& [cmd & args]]
   (case cmd
-    "hooks" (print-hooks)
+    "hooks" (list-hooks args)
     "create-hook" (create-hooks args)
     "delete-hook" (delete-hooks args)
     (abort "Usage: lein github [hooks|create-hook|delete-hook]"))
