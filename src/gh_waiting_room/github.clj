@@ -1,6 +1,6 @@
 (ns gh-waiting-room.github
   (:require [tentacles.issues :refer [my-issues create-comment]]
-            [tentacles.repos :refer [create-hook hooks repos]]
+            [tentacles.repos :refer [create-hook hooks repos delete-hook]]
             table.core
             [gh-waiting-room.config :refer [gh-auth issue-url-regex gh-hide-labels
                                             app-domain gh-user hook-forks]]))
@@ -68,9 +68,12 @@
   (my-issues (merge {:filter "all" :all-pages true} (gh-auth))))
 
 (defn create-webhook [user name]
-  (create-hook user name "web"
-               {:url (full-url-for "/webhook") :content_type "json"}
-               (assoc (gh-auth) :events ["issues"])))
+  (let [result
+        (create-hook user name "web"
+                     {:url (full-url-for "/webhook") :content_type "json"}
+                     (assoc (gh-auth) :events ["issues"]))]
+    (println (format "Created webhook for %s/%s with id %s"
+                     user name (:id result)))))
 
 (defn repo-hooks
   "List hooks for an individual repository"
@@ -88,23 +91,28 @@
          (filter filter-fn)
          (map (fn [repo] {:name (get! repo :name) :owner (get-in! repo [:owner :login])})))))
 
-(defn all-hooks
-  "List hooks for all public repositories with service hooks"
+(defn list-repos-with-hooks
   []
-  (let [repos (map #(assoc % :hooks (repo-hooks (:owner %) (:name %))) (list-repos))
-        hook-id #(or (:url %) (:name %))]
-    (->> repos
+  (map #(assoc % :hooks (repo-hooks (:owner %) (:name %))) (take 10 (list-repos))))
+
+(defn all-hooks
+  "List hooks by repository for all public repositories with hooks"
+  []
+  (let [hook-id #(or (:url %) (:name %))]
+    (->> (list-repos-with-hooks)
          (filter #(seq (:hooks %)))
          (map #(assoc % :hooks (map hook-id (:hooks %)))))))
 
-;;; TODO
+(defn delete-webhook
+  [user name id]
+  (delete-hook user name id (gh-auth)))
+
 (defn create-all-webhooks
   "Creates webhooks for all repositories that don't have one in $GITHUB_APP_DOMAIN"
   []
-  (let [repos (map #(assoc % :hooks (repo-hooks (:owner %) (:name %))) (list-repos))
-        has-webhook (fn [repo] (some #(= (full-url-for "/webhook") (:url %)) (:hooks repo)))
-        new-repos (remove has-webhook repos)]
-    (doseq [repo new-repos]
+  (let [has-gh-webhook #(some #{(full-url-for "/webhook")} (map :url (:hooks %)))
+        repos (remove has-gh-webhook (list-repos-with-hooks))]
+    (doseq [repo (take 1 repos)]
       (create-webhook (:owner repo) (:name repo)))))
 
 (defn create-issue-comment [db issue-id issue-num]
