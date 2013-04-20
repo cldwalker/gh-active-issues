@@ -1,8 +1,9 @@
 (ns gh-waiting-room.github
   (:require [tentacles.issues :refer [my-issues create-comment]]
             [tentacles.repos :refer [create-hook hooks repos]]
+            table.core
             [gh-waiting-room.config :refer [gh-auth issue-url-regex gh-hide-labels
-                                            app-domain gh-user]]))
+                                            app-domain gh-user hook-forks]]))
 
 ;;; util fns
 ; TODO: can this come from url-for?
@@ -71,7 +72,9 @@
                {:url (full-url-for "/webhook") :content_type "json"}
                (assoc (gh-auth) :events ["issues"])))
 
-(defn list-hooks [user name]
+(defn repo-hooks
+  "List hooks for an individual repository"
+  [user name]
   (->>
    (hooks user name (gh-auth))
    (map (fn [h]
@@ -80,20 +83,29 @@
 (defn list-repos
   []
   (let [all-repos (repos (assoc (gh-auth) :type "public" :all-pages true))
-        filter-fn (if (System/getenv "GITHUB_ACTIVATE_FORKS") identity :fork)]
+        filter-fn (if (hook-forks) identity (comp not :fork))]
     (->> all-repos
          (filter filter-fn)
-         (map :name))))
+         (map (fn [repo] {:name (get! repo :name) :owner (get-in! repo [:owner :login])})))))
+
+(defn all-hooks
+  "List hooks for all public repositories with service hooks"
+  []
+  (let [repos (map #(assoc % :hooks (repo-hooks (:owner %) (:name %))) (list-repos))
+        hook-id #(or (:url %) (:name %))]
+    (->> repos
+         (filter #(seq (:hooks %)))
+         (map #(assoc % :hooks (map hook-id (:hooks %)))))))
 
 ;;; TODO
 (defn create-all-webhooks
   "Creates webhooks for all repositories that don't have one in $GITHUB_APP_DOMAIN"
   []
-  (let [repos (map #(array-map :name % :hooks (list-hooks (gh-user) %)) (list-repos))
+  (let [repos (map #(assoc % :hooks (repo-hooks (:owner %) (:name %))) (list-repos))
         has-webhook (fn [repo] (some #(= (full-url-for "/webhook") (:url %)) (:hooks repo)))
         new-repos (remove has-webhook repos)]
     (doseq [repo new-repos]
-      (create-webhook (gh-user) (:name repo)))))
+      (create-webhook (:owner repo) (:name repo)))))
 
 (defn create-issue-comment [db issue-id issue-num]
   (let [issue (or

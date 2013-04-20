@@ -54,7 +54,8 @@ hooks on your repositories. Here are the commands to use:
 * To create a hook for just one repository: `lein gh-create-hook user/repo`
 * To create hooks for all your original repositories: `lein
   gh-create-hook :all`
-* To list your hooks: `lein gh-hooks`
+* To list your hooks (*caution: one API call per repository*): `lein
+  github hooks`
 * To delete a hook for just one repository: `lein gh-delete-hook user/repo`
 * To delete all hooks: `lein gh-delete-hook :all`
 
@@ -76,9 +77,11 @@ and issues the public can see:
   hides issues with those labels. Useful when labels indicate issues
   that you're not actively working on but have left open. If nothing
   is specified, the default is to hide issues with any labels.
-* $GITHUB_APP_DOMAIN - This is required if you're using the auto-commenting.
+* $GITHUB_APP_DOMAIN - This is required if you're using auto-commenting.
   This should be the full domain of your app and will be used mainly
   for link generation.
+* $GITHUB_HOOK_FORKS - When set to anything i.e. "1", this includes
+  forks for listing and creating service hooks.
 
 ## Who this is for
 

@@ -30,3 +30,7 @@
 (defn app-domain
   []
   (or (System/getenv "GITHUB_APP_DOMAIN") "http://localhost:8080"))
+
+(defn hook-forks
+  []
+  (System/getenv "GITHUB_HOOK_FORKS"))
