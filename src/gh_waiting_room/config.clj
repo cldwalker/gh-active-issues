@@ -34,3 +34,7 @@
 (defn hook-forks
   []
   (System/getenv "GITHUB_HOOK_FORKS"))
+
+(defn gh-hmac-secret
+  []
+  (System/getenv "GITHUB_HMAC_SECRET"))

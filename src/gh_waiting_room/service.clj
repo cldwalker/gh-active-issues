@@ -5,7 +5,7 @@
               [io.pedestal.service.http.route.definition :refer [defroutes]]
               [io.pedestal.service.interceptor :refer [defon-response]]
               [clostache.parser :refer [render-resource]]
-              [gh-waiting-room.config :refer [gh-user]]
+              [gh-waiting-room.config :refer [gh-user gh-hmac-secret]]
               [gh-waiting-room.github :refer [get! get-in! create-issue-comment
                                               viewable-issues fetch-gh-issues]]
               [ring.util.response :as ring-resp]))
@@ -24,8 +24,32 @@
                     {:github-user (gh-user)
                      :issues (viewable-issues @db)})))
 
+(defn- hex-hmac-sha1
+  [key input]
+  (let [secret (javax.crypto.spec.SecretKeySpec. (. key getBytes "UTF-8") "HmacSHA1")
+        hmac-sha1 (doto (javax.crypto.Mac/getInstance "HmacSHA1") (.init secret))
+        bytes (. hmac-sha1 doFinal (. input getBytes "UTF-8"))
+        hex (apply str (map (partial format "%02x") bytes))]
+    hex))
+
+(defn verify-secret!
+  [secret body x-hub-signature]
+  (prn "BODY" body)
+  (let [expected (re-find #"(?<=sha1=).*$" (str x-hub-signature))
+        actual (hex-hmac-sha1 secret body)]
+    (prn "ACTUAL, EXPECTED:" actual expected)
+    (when-not (= actual expected)
+      (throw (ex-info (format "Expected sha1 '%s' but received '%s'" expected actual)
+                      {:expected expected :actual actual})))))
+
 (defn webhook-page
   [request]
+  #_(prn "BODY" (slurp (:body request)))
+  #_(clojure.pprint/pprint request)
+
+  (when-let [secret (gh-hmac-secret)]
+    (verify-secret! secret (slurp (:body request)) (-> request :headers (get "X-Hub-Signature"))))
+
   (let [params (-> request :json-params)
         action (get! params "action")
         full-name (get-in! params ["repository" "full_name"])
