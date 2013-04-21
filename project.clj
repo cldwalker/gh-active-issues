@@ -1,8 +1,8 @@
 (defproject gh-waiting-room "0.0.1-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
-  :license {:name "Eclipse Public License"
-            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :description "A pedestal service meant to help github users and maintainers understand the issues a maintainer has."
+  :url "https://github.com/cldwalker/gh-waiting-room"
+  :license {:name "The MIT License"
+            :url "https://en.wikipedia.org/wiki/MIT_License"}
   :dependencies [[org.clojure/clojure "1.5.0"]
                  [io.pedestal/pedestal.service "0.1.3"]
                  [de.ubercode.clostache/clostache "1.3.1"]
