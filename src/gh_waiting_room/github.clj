@@ -18,6 +18,8 @@
 
 ;;; github data fns
 (defn- issue-filter
+  "Filter fn used to only keep public issues that match allowed repository names
+   and allowed label values."
   [issue]
   (and
    (not (get-in issue [:repository :private]))
@@ -28,7 +30,9 @@
            (map :name (:labels issue))))
      (= [] (:labels issue)))))
 
-(defn ->issue [issue]
+(defn ->issue
+  "Converts an issue from github into a simplified issue used throughout this app."
+  [issue]
   {:id (format "%s#%s"
                (get-in! issue [:repository :full_name])
                (get! issue :number))
@@ -45,7 +49,9 @@
    :created (or (re-find #"\d{4}-\d\d-\d\d"(get! issue :created_at))
                 (throw (ex-info "Failed to parse date from an issue" {:issue issue})))})
 
-(defn viewable-issues [db]
+(defn viewable-issues
+  "Filter allowed issues, simplify their format and prepare them to be viewed on a web page."
+  [db]
   (->> (:issues db)
        (filter issue-filter)
        (map ->issue)
@@ -53,7 +59,9 @@
        (map-indexed (fn [num elem]
                       (assoc elem :position (inc num))))))
 
-(defn- comment-body [issue]
+(defn- comment-body
+  "Creates the comment body for an auto comment kicked off by an issue being opened or closed."
+  [issue]
   (str
    (if (= (:type issue) "pull request")
      "Thanks for your pull request!"
@@ -64,10 +72,12 @@
 
 ;;; github fns
 (defn fetch-gh-issues
+  "Fetches all issues that authenticated user has push access to, public or private."
   []
   (my-issues (merge {:filter "all" :all-pages true} (gh-auth))))
 
-(defn create-webhook [user name]
+(defn create-webhook
+  [user name]
   (let [result
         (create-hook user name "web"
                      {:url (full-url-for "/webhook") :content_type "json"}
@@ -76,14 +86,14 @@
                      user name (:id result)))))
 
 (defn repo-hooks
-  "List hooks for an individual repository"
+  "List hooks for an individual repository."
   [user name]
   (->>
    (hooks user name (gh-auth))
    (map (fn [h]
           {:url (get-in h [:config :url]) :id (:id h) :name (:name h)}))))
 
-(defn list-repos
+(defn- list-repos
   []
   (let [all-repos (repos (assoc (gh-auth) :type "public" :all-pages true))
         filter-fn (if (hook-forks) identity (comp not :fork))]
@@ -91,16 +101,15 @@
          (filter filter-fn)
          (map (fn [repo] {:name (get! repo :name) :owner (get-in! repo [:owner :login])})))))
 
-(defn list-repos-with-hooks
+(defn- list-repos-with-hooks
   []
   (map #(assoc % :hooks (repo-hooks (:owner %) (:name %))) (list-repos)))
 
 (defn all-hooks
-  "List hooks by repository for all public repositories with hooks"
+  "List hooks by repository for public repositories owned by user."
   []
   (let [hook-id #(or (:url %) (:name %))]
     (->> (list-repos-with-hooks)
-         (filter #(seq (:hooks %)))
          (map #(assoc % :hooks (map hook-id (:hooks %)))))))
 
 (defn delete-webhook
@@ -109,14 +118,16 @@
     (println (format "Deleted webhook for %s/%s" user name))))
 
 (defn create-all-webhooks
-  "Creates webhooks for all repositories that don't have one in $GITHUB_APP_DOMAIN"
+  "Creates webhooks for all repositories that don't have one in $GITHUB_APP_DOMAIN."
   []
   (let [has-gh-webhook #(some #{(full-url-for "/webhook")} (map :url (:hooks %)))
         repos (remove has-gh-webhook (list-repos-with-hooks))]
     (doseq [repo repos]
       (create-webhook (:owner repo) (:name repo)))))
 
-(defn create-issue-comment [db issue-id issue-num]
+(defn create-issue-comment
+  "Creates a comment for an issue given a map (db of issues)."
+  [db issue-id issue-num]
   (let [issue (or
                (some #(and (= (:id %) issue-id) %) (viewable-issues db))
                (throw (ex-info "No issue found for webhook" {:issue-id issue-id})))
