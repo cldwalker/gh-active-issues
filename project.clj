@@ -1,5 +1,5 @@
 (defproject gh-waiting-room "0.0.1-SNAPSHOT"
-  :description "A pedestal service meant to help github users and maintainers understand the issues a maintainer has."
+  :description "A pedestal service that helps github maintainers grapple with their issues and helps users understand what's before their issue."
   :url "https://github.com/cldwalker/gh-waiting-room"
   :license {:name "The MIT License"
             :url "https://en.wikipedia.org/wiki/MIT_License"}
