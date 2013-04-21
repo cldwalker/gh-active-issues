@@ -5,24 +5,11 @@
                                             create-webhook delete-webhook
                                             repo-hooks]]))
 
-(defn vec-table [rows]
-  (table rows)
-  (println (format "%s rows in set" (dec (count rows)))))
-
 (defn print-hooks []
   (println "Fetching hooks...")
   (let [hooks (->> (all-hooks)
-                   ;; convert to subvectors for table ordering
-                   (map #(vec [(:name %) (:owner %) (clojure.string/join "," (:hooks %))]))
-                   (cons [:name :owner :hooks]))]
-    (vec-table hooks)))
-
-(defn print-repo-hooks [[user repo]]
-  (let [hooks (->>
-               (repo-hooks user repo)
-               (map (juxt :id :url :name))
-               (cons [:id :url :name]))]
-    (vec-table hooks)))
+                   (map #(assoc % :hooks (clojure.string/join "," (:hooks %)))))]
+    (table hooks :fields [:name :owner :hooks] :desc true)))
 
 (defn abort [msg]
   (println msg)
@@ -45,7 +32,9 @@
 (defn list-hooks [args]
   (case (count args)
     0 (print-hooks)
-    2 (print-repo-hooks args)
+    2 (table
+       (apply repo-hooks args)
+       :fields [:id :url :name] :desc true)
     (abort "Usage: lein github hooks <USER> <REPO>")))
 
 (defn -main [& [cmd & args]]
