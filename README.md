@@ -11,6 +11,8 @@ expectations of turnaround time and feel ignored. Let's fix this!
 
 My current active issues [live on heroku](https://gh-waiting-room.herokuapp.com/).
 
+[![Build Status](https://travis-ci.org/cldwalker/gh-waiting-room.png?branch=master)](https://travis-ci.org/cldwalker/gh-waiting-room)
+
 ## Features
 
 This app has three main features:
