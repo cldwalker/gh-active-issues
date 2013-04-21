@@ -31,7 +31,7 @@
         full-name (get-in! params ["repository" "full_name"])
         issue-num (get-in! params ["issue" "number"])
         issue-id (format "%s#%s" full-name issue-num)]
-    (when (= action "created")
+    (when (= action "opened")
       (update-gh-issues)
       (create-issue-comment @db issue-id issue-num))
     (when (and

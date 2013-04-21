@@ -61,7 +61,7 @@
 
 ;;; Doesn't use response-for as it doesn't support :post yet
 (deftest webhook-page-test
-  (is (= (fns-called-for-webhook-page "created")
+  (is (= (fns-called-for-webhook-page "opened")
          {:update-gh-issues 1 :create-issue-comment 1})
       "Updates issues and creates comment for a newly created issue")
   (is (= (fns-called-for-webhook-page "closed")
