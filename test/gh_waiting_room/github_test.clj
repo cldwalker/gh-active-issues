@@ -18,7 +18,8 @@
             (->>
              (has-args ["cldwalker" "repo" 10 body-expects])
              (times once))]
-           (with-redefs [github/viewable-issues (constantly issues)]
+           (with-redefs [github/viewable-issues (constantly issues)
+                         config/gh-auth (constantly "user:pass")]
              (github/create-issue-comment {} id 10)))))
 
 (deftest create-issue-comment-test
