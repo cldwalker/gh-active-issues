@@ -1,7 +1,6 @@
 (ns gh-waiting-room.github
   (:require [tentacles.issues :refer [my-issues create-comment]]
             [tentacles.repos :refer [create-hook hooks repos delete-hook]]
-            table.core
             [gh-waiting-room.config :refer [gh-auth issue-url-regex gh-hide-labels
                                             app-domain gh-user hook-forks]]))
 
