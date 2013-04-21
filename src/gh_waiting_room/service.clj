@@ -5,6 +5,7 @@
               [io.pedestal.service.http.route.definition :refer [defroutes]]
               [io.pedestal.service.interceptor :refer [defon-response]]
               [clostache.parser :refer [render-resource]]
+              [clojure.data.json :as json]
               [gh-waiting-room.config :refer [gh-user gh-hmac-secret]]
               [gh-waiting-room.github :refer [get! get-in! create-issue-comment
                                               viewable-issues fetch-gh-issues]]
@@ -34,7 +35,6 @@
 
 (defn verify-secret!
   [secret body x-hub-signature]
-  (prn "BODY" body)
   (let [expected (re-find #"(?<=sha1=).*$" (str x-hub-signature))
         actual (hex-hmac-sha1 secret body)]
     (prn "ACTUAL, EXPECTED:" actual expected)
@@ -44,24 +44,20 @@
 
 (defn webhook-page
   [request]
-  #_(prn "BODY" (slurp (:body request)))
-  #_(clojure.pprint/pprint request)
+  (let [body (slurp (:body request))]
+    (when-let [secret (gh-hmac-secret)]
+      (verify-secret! secret body (-> request :headers (get "x-hub-signature"))))
 
-  (when-let [secret (gh-hmac-secret)]
-    (verify-secret! secret (slurp (:body request)) (-> request :headers (get "X-Hub-Signature"))))
-
-  (let [params (-> request :json-params)
-        action (get! params "action")
-        full-name (get-in! params ["repository" "full_name"])
-        issue-num (get-in! params ["issue" "number"])
-        issue-id (format "%s#%s" full-name issue-num)]
-    (when (= action "opened")
-      (update-gh-issues)
-      (create-issue-comment @db issue-id issue-num))
-    (when (and
-           (some #{action} ["closed" "reopened"])
-           (some #(= (:id %) issue-id) (viewable-issues @db)))
-      (update-gh-issues)))
+    (let [params (json/read-str body)
+          action (get! params "action")
+          full-name (get-in! params ["repository" "full_name"])
+          issue-num (get-in! params ["issue" "number"])
+          issue-id (format "%s#%s" full-name issue-num)]
+      (when (some #{action} ["created" "reopened"])
+        (update-gh-issues)
+        (create-issue-comment @db issue-id issue-num))
+      (when (and (= action "closed") (some #(= (:id %) issue-id) (viewable-issues @db)))
+        (update-gh-issues))))
   {:status 200})
 
 (defon-response html-content-type
@@ -70,7 +66,7 @@
 
 (defroutes routes
   [[["/" {:get home-page}
-     ^:interceptors [(body-params/body-params) html-content-type]
+     ^:interceptors [html-content-type]
      ["/webhook" {:post webhook-page}]
      ]]])
 
