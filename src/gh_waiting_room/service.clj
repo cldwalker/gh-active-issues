@@ -31,10 +31,12 @@
         full-name (get-in! params ["repository" "full_name"])
         issue-num (get-in! params ["issue" "number"])
         issue-id (format "%s#%s" full-name issue-num)]
-    (when (some #{action} ["created" "reopened"])
+    (when (= action "created")
       (update-gh-issues)
       (create-issue-comment @db issue-id issue-num))
-    (when (and (= action "closed") (some #(= (:id %) issue-id) (viewable-issues @db)))
+    (when (and
+           (some #{action} ["closed" "reopened"])
+           (some #(= (:id %) issue-id) (viewable-issues @db)))
       (update-gh-issues)))
   {:status 200})
 
