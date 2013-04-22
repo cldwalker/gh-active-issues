@@ -3,7 +3,7 @@
             [gh-waiting-room.util :refer [get-in! get!]]
             [tentacles.repos :refer [create-hook hooks repos delete-hook]]
             [gh-waiting-room.config :refer [gh-auth issue-url-regex gh-hide-labels
-                                            app-domain gh-user hook-forks]]))
+                                            gh-hmac-secret app-domain gh-user hook-forks]]))
 
 ; TODO: can this come from url-for?
 (defn- full-url-for [path]
@@ -73,7 +73,10 @@
   [user name]
   (let [result
         (create-hook user name "web"
-                     {:url (full-url-for "/webhook") :content_type "json"}
+                     (merge
+                      {:url (full-url-for "/webhook") :content_type "json"}
+                      (if-let [secret (gh-hmac-secret)]
+                        {:secret secret} {}))
                      (assoc (gh-auth) :events ["issues"]))]
     (println (format "Created webhook for %s/%s with id %s"
                      user name (:id result)))))
@@ -84,7 +87,9 @@
   (->>
    (hooks user name (gh-auth))
    (map (fn [h]
-          {:url (get-in h [:config :url]) :id (:id h) :name (:name h)}))))
+          {:url (get-in h [:config :url])
+           :secret (get-in h [:config :secret])
+           :id (:id h) :name (:name h)}))))
 
 (defn- list-repos
   []

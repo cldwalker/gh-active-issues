@@ -34,7 +34,7 @@
     0 (print-hooks)
     2 (table
        (apply repo-hooks args)
-       :fields [:id :url :name] :desc true)
+       :fields [:id :url :name :secret] :desc true)
     (abort "Usage: lein github hooks <USER> <REPO>")))
 
 (defn -main [& [cmd & args]]
