@@ -6,8 +6,9 @@
               [io.pedestal.service.interceptor :refer [defon-response]]
               [clostache.parser :refer [render-resource]]
               [clojure.data.json :as json]
+              [gh-waiting-room.util :refer [get-in! get! hex-hmac-sha1]]
               [gh-waiting-room.config :refer [gh-user gh-hmac-secret]]
-              [gh-waiting-room.github :refer [get! get-in! create-issue-comment
+              [gh-waiting-room.github :refer [create-issue-comment
                                               viewable-issues fetch-gh-issues]]
               [ring.util.response :as ring-resp]))
 
@@ -24,14 +25,6 @@
    (render-resource "public/index.mustache"
                     {:github-user (gh-user)
                      :issues (viewable-issues @db)})))
-
-(defn- hex-hmac-sha1
-  [key input]
-  (let [secret (javax.crypto.spec.SecretKeySpec. (. key getBytes "UTF-8") "HmacSHA1")
-        hmac-sha1 (doto (javax.crypto.Mac/getInstance "HmacSHA1") (.init secret))
-        bytes (. hmac-sha1 doFinal (. input getBytes "UTF-8"))
-        hex (apply str (map (partial format "%02x") bytes))]
-    hex))
 
 (defn verify-secret!
   [secret body x-hub-signature]

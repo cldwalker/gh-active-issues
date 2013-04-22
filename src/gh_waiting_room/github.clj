@@ -1,19 +1,13 @@
 (ns gh-waiting-room.github
   (:require [tentacles.issues :refer [my-issues create-comment]]
+            [gh-waiting-room.util :refer [get-in! get!]]
             [tentacles.repos :refer [create-hook hooks repos delete-hook]]
             [gh-waiting-room.config :refer [gh-auth issue-url-regex gh-hide-labels
                                             app-domain gh-user hook-forks]]))
 
-;;; util fns
 ; TODO: can this come from url-for?
 (defn- full-url-for [path]
   (str (app-domain) path))
-
-(defn get-in! [m ks]
-  (or (get-in m ks) (throw (ex-info "No value found for nested keys in map" {:map m :keys ks}))))
-
-(defn get! [m k]
-  (or (get m k) (throw (ex-info "No value found for key in map" {:map m :key k}))))
 
 ;;; github data fns
 (defn- issue-filter
