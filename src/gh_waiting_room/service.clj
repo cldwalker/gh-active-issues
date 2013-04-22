@@ -53,9 +53,7 @@
       (case (:action issue)
         "created" (do (update-gh-issues)
                       (create-issue-comment @db (:id issue) (:number issue)))
-        "reopened" (do (update-gh-issues)
-                       (create-issue-comment @db (:id issue) (:number issue)))
-        ;; for closed
+        ;; for closed and reopened
         (when (some #(= (:id %) (:id issue)) (viewable-issues @db))
           (update-gh-issues)))))
   {:status 200})
