@@ -104,9 +104,8 @@ then this is for you.
 ## Credits
 * Joshua Johnson for providing list styling in
   [this article](http://designshack.net/articles/css/5-simple-and-practical-css-list-styles-you-can-copy-and-paste/)
+* @visibletrap for [hmac-sha1 code](https://gist.github.com/visibletrap/4571244)
   
 ## TODO
-* Add optional ability to use
-  [secret](https://github.com/github/github-services/blob/master/lib/services/web.rb#L7)
-  with /webhook
+* De-uglify the issues list
 * Lein task to be run nightly for adding webhooks to new repositories
