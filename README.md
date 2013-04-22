@@ -15,19 +15,18 @@ My current active issues [live on heroku](https://gh-waiting-room.herokuapp.com/
 
 ## Features
 
-This app has three main features:
+This app has two main features:
 
 * It lists issues the maintainer considers active.
 * It auto-comments soon after an issue/pull request is opened with a
   link to the issue on the active issues list. This link is unique and
-  remains valid as long as the issue is active.
-* The active issues are auto-updated any time an issue is closed or opened.
+  remains valid as long as the issue is active. Also, active issues
+  are auto-updated any time an issue is closed or opened.
 
-The second and third features are enabled per repository using service
-hooks. To see these features in action feel free to open/close an
-issue on
+The second feature is enabled per repository using webhooks. To see
+these features in action feel free to open/close an issue on
 [this repository](https://github.com/cldwalker/gh-waiting-room/issues).
-To set up webhooks see [service-hooks](#webhooks).
+To set up webhooks see [webhooks](#webhooks).
 
 ## Running the App
 
