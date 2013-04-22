@@ -4,6 +4,7 @@
             [gh-waiting-room.test-helper :refer [disallow-web-requests!]]
             [io.pedestal.service.http :as bootstrap]
             [gh-waiting-room.github :as github]
+            [gh-waiting-room.config :as config]
             [clojure.data.json :as json]
             [gh-waiting-room.service :as service]))
 
@@ -18,7 +19,7 @@
                                :id "cldwalker/gh-waiting-room#1"
                                :url "https://github.com/cldwalker/gh-waiting-room/issues/1"}])
                  service/update-gh-issues (constantly nil)
-                 gh-waiting-room.config/gh-user (constantly "Hal")]
+                 config/gh-user (constantly "Hal")]
      (:body (response-for service :get "/")))))
 
 (deftest home-page-test
@@ -47,24 +48,26 @@
 (defn fns-called-for-webhook-page
   [action & options]
   (disallow-web-requests!
-   (let [{:keys [issues full-name]
+   (let [{:keys [issues full-name secret sha1]
           :or {issues [{:id "cldwalker/something"}]
                full-name "cldwalker/stub"}} options
                mocks-called (atom {})
                json {"action" action
                      "repository" {"full_name" full-name}
                      "issue" {"number" "1"}}
-               body (json/write-str json)]
+               body (json/write-str json)
+               headers (if sha1 {"x-hub-signature" sha1} {})]
      (with-redefs [service/update-gh-issues (inc-mock-count mocks-called :update-gh-issues)
                    github/create-issue-comment (inc-mock-count mocks-called :create-issue-comment)
                    github/viewable-issues (constantly issues)
-                   ;; just create an actual stream
-                   slurp (constantly body)]
-       (service/webhook-page {:body body}))
+                   ;; TODO: just create an actual stream
+                   slurp (constantly body)
+                   config/gh-hmac-secret (constantly secret)]
+       (service/webhook-page {:body body :headers headers}))
      @mocks-called)))
 
 ;;; Doesn't use response-for as it doesn't support :post yet
-(deftest webhook-page-test
+(deftest webhook-page-test-without-secret
   (is (= (fns-called-for-webhook-page "created")
          {:update-gh-issues 1 :create-issue-comment 1})
       "Updates issues and creates comment for a newly created issue")
@@ -74,5 +77,33 @@
   (is (= (fns-called-for-webhook-page "closed"
                                       :full-name "cldwalker/repo"
                                       :issues [{:id "cldwalker/repo#1"}] )
+         {:update-gh-issues 1})
+      "Updates issues for an active issue that is closed"))
+
+(deftest webhook-page-test-with-secret
+  (is (thrown? clojure.lang.ExceptionInfo
+               (fns-called-for-webhook-page "created"
+                                            :secret "opensesame"))
+      "fails authentication with no header")
+  (is (thrown? clojure.lang.ExceptionInfo
+               (fns-called-for-webhook-page "created"
+                                            :secret "opensesame"
+                                            :sha1 "sha1=password"))
+      "fails authentication with invalid sha1")
+  (is (= (fns-called-for-webhook-page "created"
+                                      :secret "opensesame"
+                                      :sha1 "sha1=02f5bdebb6df2d31b8210fa71d3e79b46b8eb7e7")
+         {:update-gh-issues 1 :create-issue-comment 1})
+      "Updates issues and creates comment for a newly created issue")
+  (is (= (fns-called-for-webhook-page "closed"
+                                      :secret "opensesame"
+                                      :sha1 "sha1=79af8ab1fc2b90d39a706042f299b9639f06922e")
+         {})
+      "Doesn't update issues for an inactive issue that is closed")
+  (is (= (fns-called-for-webhook-page "closed"
+                                      :full-name "cldwalker/repo"
+                                      :issues [{:id "cldwalker/repo#1"}]
+                                      :secret "opensesame"
+                                      :sha1 "sha1=dbf5e8c44b794de84125049f542fcc562beb3e43")
          {:update-gh-issues 1})
       "Updates issues for an active issue that is closed"))

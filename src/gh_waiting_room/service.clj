@@ -37,10 +37,10 @@
   [secret body x-hub-signature]
   (let [expected (re-find #"(?<=sha1=).*$" (str x-hub-signature))
         actual (hex-hmac-sha1 secret body)]
-    (prn "ACTUAL, EXPECTED:" actual expected)
     (when-not (= actual expected)
-      (throw (ex-info (format "Expected sha1 '%s' but received '%s'" expected actual)
-                      {:expected expected :actual actual})))))
+      (throw (ex-info (format "Authentication failed: expected '%s' but received '%s'" expected actual)
+                      {:expected expected :actual actual})))
+    (println (str "Successfully authenticated with " actual))))
 
 (defn- json-payload->issue [body]
   (let [json (json/read-str body)
@@ -64,7 +64,7 @@
                        (create-issue-comment @db (:id issue) (:number issue)))
         ;; for closed
         (when (some #(= (:id %) (:id issue)) (viewable-issues @db))
-                   (update-gh-issues)))))
+          (update-gh-issues)))))
   {:status 200})
 
 (defon-response html-content-type
