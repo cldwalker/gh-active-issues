@@ -1,3 +1,5 @@
 target/
 tmp/
 logs/
+.lein-failures
+.lein-repl-history
