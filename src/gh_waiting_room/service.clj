@@ -42,22 +42,29 @@
       (throw (ex-info (format "Expected sha1 '%s' but received '%s'" expected actual)
                       {:expected expected :actual actual})))))
 
+(defn- json-payload->issue [body]
+  (let [json (json/read-str body)
+        full-name (get-in! json ["repository" "full_name"])
+        num (get-in! json ["issue" "number"])]
+    {:id (format "%s#%s" full-name num)
+     :number num
+     :action (get! json "action")}))
+
 (defn webhook-page
   [request]
   (let [body (slurp (:body request))]
     (when-let [secret (gh-hmac-secret)]
       (verify-secret! secret body (-> request :headers (get "x-hub-signature"))))
 
-    (let [params (json/read-str body)
-          action (get! params "action")
-          full-name (get-in! params ["repository" "full_name"])
-          issue-num (get-in! params ["issue" "number"])
-          issue-id (format "%s#%s" full-name issue-num)]
-      (when (some #{action} ["created" "reopened"])
-        (update-gh-issues)
-        (create-issue-comment @db issue-id issue-num))
-      (when (and (= action "closed") (some #(= (:id %) issue-id) (viewable-issues @db)))
-        (update-gh-issues))))
+    (let [issue (json-payload->issue body)]
+      (case (:action issue)
+        "created" (do (update-gh-issues)
+                      (create-issue-comment @db (:id issue) (:number issue)))
+        "reopened" (do (update-gh-issues)
+                       (create-issue-comment @db (:id issue) (:number issue)))
+        ;; for closed
+        (when (some #(= (:id %) (:id issue)) (viewable-issues @db))
+                   (update-gh-issues)))))
   {:status 200})
 
 (defon-response html-content-type
