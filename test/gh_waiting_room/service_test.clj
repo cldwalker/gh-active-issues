@@ -4,6 +4,7 @@
             [gh-waiting-room.test-helper :refer [disallow-web-requests!]]
             [io.pedestal.service.http :as bootstrap]
             [gh-waiting-room.github :as github]
+            [clojure.data.json :as json]
             [gh-waiting-room.service :as service]))
 
 (def service
@@ -52,16 +53,19 @@
                mocks-called (atom {})
                json {"action" action
                      "repository" {"full_name" full-name}
-                     "issue" {"number" "1"}}]
+                     "issue" {"number" "1"}}
+               body (json/write-str json)]
      (with-redefs [service/update-gh-issues (inc-mock-count mocks-called :update-gh-issues)
                    github/create-issue-comment (inc-mock-count mocks-called :create-issue-comment)
-                   github/viewable-issues (constantly issues)]
-       (service/webhook-page {:json-params json}))
+                   github/viewable-issues (constantly issues)
+                   ;; just create an actual stream
+                   slurp (constantly body)]
+       (service/webhook-page {:body body}))
      @mocks-called)))
 
 ;;; Doesn't use response-for as it doesn't support :post yet
 (deftest webhook-page-test
-  (is (= (fns-called-for-webhook-page "opened")
+  (is (= (fns-called-for-webhook-page "created")
          {:update-gh-issues 1 :create-issue-comment 1})
       "Updates issues and creates comment for a newly created issue")
   (is (= (fns-called-for-webhook-page "closed")
