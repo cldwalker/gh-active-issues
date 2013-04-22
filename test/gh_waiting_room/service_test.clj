@@ -68,9 +68,9 @@
 
 ;;; Doesn't use response-for as it doesn't support :post yet
 (deftest webhook-page-test-without-secret
-  (is (= (fns-called-for-webhook-page "created")
+  (is (= (fns-called-for-webhook-page "opened")
          {:update-gh-issues 1 :create-issue-comment 1})
-      "Updates issues and creates comment for a newly created issue")
+      "Updates issues and creates comment for a newly opened issue")
   (is (= (fns-called-for-webhook-page "closed")
          {})
       "Doesn't update issues for an inactive issue that is closed")
@@ -82,19 +82,19 @@
 
 (deftest webhook-page-test-with-secret
   (is (thrown? clojure.lang.ExceptionInfo
-               (fns-called-for-webhook-page "created"
+               (fns-called-for-webhook-page "opened"
                                             :secret "opensesame"))
       "fails authentication with no header")
   (is (thrown? clojure.lang.ExceptionInfo
-               (fns-called-for-webhook-page "created"
+               (fns-called-for-webhook-page "opened"
                                             :secret "opensesame"
                                             :sha1 "sha1=password"))
       "fails authentication with invalid sha1")
-  (is (= (fns-called-for-webhook-page "created"
+  (is (= (fns-called-for-webhook-page "opened"
                                       :secret "opensesame"
-                                      :sha1 "sha1=02f5bdebb6df2d31b8210fa71d3e79b46b8eb7e7")
+                                      :sha1 "sha1=efc1109b206ac96607e4d161c09614f104f901f0")
          {:update-gh-issues 1 :create-issue-comment 1})
-      "Updates issues and creates comment for a newly created issue")
+      "Updates issues and creates comment for a newly opened issue")
   (is (= (fns-called-for-webhook-page "closed"
                                       :secret "opensesame"
                                       :sha1 "sha1=79af8ab1fc2b90d39a706042f299b9639f06922e")

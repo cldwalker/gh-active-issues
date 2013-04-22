@@ -51,8 +51,8 @@
 
     (let [issue (json-payload->issue body)]
       (case (:action issue)
-        "created" (do (update-gh-issues)
-                      (create-issue-comment @db (:id issue) (:number issue)))
+        "opened" (do (update-gh-issues)
+                     (create-issue-comment @db (:id issue) (:number issue)))
         ;; for closed and reopened
         (when (some #(= (:id %) (:id issue)) (viewable-issues @db))
           (update-gh-issues)))))
