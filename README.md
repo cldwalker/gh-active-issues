@@ -27,7 +27,7 @@ The second and third features are enabled per repository using service
 hooks. To see these features in action feel free to open/close an
 issue on
 [this repository](https://github.com/cldwalker/gh-waiting-room/issues).
-To set up service hooks see [service-hooks](#service-hooks).
+To set up webhooks see [service-hooks](#webhooks).
 
 ## Running the App
 
@@ -43,20 +43,20 @@ I encourage you to fork and give it a shot:
 
 ```sh
 $ heroku create
-$ heroku config:set GITHUB_AUTH=my-auth GITHUB_USER=my-name
+$ heroku config:set GITHUB_AUTH=my-auth GITHUB_USER=my-name GITHUB_HMAC_SECRET=my-secret
 $ git push heroku master
 $ heroku open
 ```
 
-## Service Hooks
+## Webhooks
 
-In order to use [features](#features) 2 and 3, you need service
-hooks on your repositories. Here are the commands to use:
+In order to use [features](#features) 2 and 3, you need webhooks
+on your repositories. Here are the commands to use:
 
 * To create a hook for just one repository:
-  `GITHUB_APP_DOMAIN=my-domain lein github create-hook USER REPO`
+  `GITHUB_APP_DOMAIN=my-domain GITHUB_HMAC_SECRET=my-secret lein github create-hook USER REPO`
 * To create hooks for all your original repositories:
-  `GITHUB_APP_DOMAIN=my-domain lein github create-hook :all`
+  `GITHUB_APP_DOMAIN=my-domain GITHUB_HMAC_SECRET=my-secret lein github create-hook :all`
 * To list your hooks (*caution: one API call per repository*):
   `lein github hooks`
 * To list more about hooks for one repository:
@@ -72,9 +72,12 @@ and issues the public can see:
 * $GITHUB_AUTH (required) - This is your username:password basic auth
   [as described in github's docs](http://developer.github.com/v3/#authentication)
 * $GITHUB_USER (required) - Your github username
+* $GITHUB_HMAC_SECRET (recommended) - Secret key used when github
+  posts to /webhook for issue state changes. If used, it should be
+  be set on the app and when creating webhooks.
 * $GITHUB_ISSUE_REGEX - A string that's interpreted as a regex to
   filter what repositories are viewable. This defaults to
-  github.com/USERNAME. Since this app fetches issues across all orgs
+  github.com/$GITHUB_USER. Since this app fetches issues across all orgs
   or repositories a user has access to, you can potentially allow
   users to see your repositories plus whatever other organization
   repositories you'd like e.g. github.com/(cldwalker|pedestal).
@@ -86,7 +89,7 @@ and issues the public can see:
   This should be the full domain of your app and will be used mainly
   for link generation.
 * $GITHUB_HOOK_FORKS - When set to anything i.e. "1", this includes
-  forks for listing and creating service hooks.
+  forks for listing and creating webhooks.
 
 ## Who this is for
 
