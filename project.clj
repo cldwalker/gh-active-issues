@@ -4,7 +4,7 @@
   :license {:name "The MIT License"
             :url "https://en.wikipedia.org/wiki/MIT_License"}
   :dependencies [[org.clojure/clojure "1.5.0"]
-                 [io.pedestal/pedestal.service "0.1.3"]
+                 [io.pedestal/pedestal.service "0.1.5"]
                  [de.ubercode.clostache/clostache "1.3.1"]
                  [tentacles "0.2.4"]
                  [table "0.4.0"]

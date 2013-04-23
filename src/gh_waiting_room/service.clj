@@ -58,13 +58,9 @@
           (update-gh-issues)))))
   {:status 200})
 
-(defon-response html-content-type
-  [response]
-  (ring-resp/content-type response "text/html"))
-
 (defroutes routes
   [[["/" {:get home-page}
-     ^:interceptors [html-content-type]
+     ^:interceptors [bootstrap/html-body]
      ["/webhook" {:post webhook-page}]
      ]]])
 
