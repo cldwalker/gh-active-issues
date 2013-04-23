@@ -68,26 +68,26 @@ on your repositories. Here are the commands to use:
 The following environment variables allows you to configure what user
 and issues the public can see:
 
-* $GITHUB_AUTH (required) - This is your username:password basic auth
+* `$GITHUB_AUTH (required)` - This is your username:password basic auth
   [as described in github's docs](http://developer.github.com/v3/#authentication)
-* $GITHUB_USER (required) - Your github username
-* $GITHUB_HMAC_SECRET (recommended) - Secret key used when github
+* `$GITHUB_USER (required)` - Your github username
+* `$GITHUB_HMAC_SECRET (recommended)` - Secret key used when github
   posts to /webhook for issue state changes. If used, it should be
   be set on the app and when creating webhooks.
-* $GITHUB_ISSUE_REGEX - A string that's interpreted as a regex to
+* `$GITHUB_ISSUE_REGEX` - A string that's interpreted as a regex to
   filter what repositories are viewable. This defaults to
   github.com/$GITHUB_USER. Since this app fetches issues across all orgs
   or repositories a user has access to, you can potentially allow
   users to see your repositories plus whatever other organization
   repositories you'd like e.g. github.com/(cldwalker|pedestal).
-* $GITHUB_HIDE_LABELS - Given a comma delimited list of labels, it
+* `$GITHUB_HIDE_LABELS` - Given a comma delimited list of labels, it
   hides issues with those labels. Useful when labels indicate issues
   that you're not actively working on but have left open. If nothing
   is specified, the default is to hide issues with any labels.
-* $GITHUB_APP_DOMAIN - This is required if you're using auto-commenting.
+* `$GITHUB_APP_DOMAIN` - This is required if you're using auto-commenting.
   This should be the full domain of your app and will be used mainly
   for link generation.
-* $GITHUB_HOOK_FORKS - When set to anything i.e. "1", this includes
+* `$GITHUB_HOOK_FORKS` - When set to anything i.e. "1", this includes
   forks for listing and creating webhooks.
 
 ## Who this is for
