@@ -120,6 +120,7 @@
   []
   (let [has-gh-webhook #(some #{(full-url-for "/webhook")} (map :url (:hooks %)))
         repos (remove has-gh-webhook (list-repos-with-hooks))]
+    (println (format "About to create webhooks for %s repositories..." (count repos)))
     (doseq [repo repos]
       (create-webhook (:owner repo) (:name repo)))))
 
