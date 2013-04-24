@@ -1,6 +1,6 @@
 ## Description
 
-This is an app to let users know what number they are in my list of
+This is an app to tell users what number they are in my list of
 active github issues. Unfortunately, github neither provides a public
 view of a maintainer's
 [issues dashboard](https://github.com/dashboard/issues/repos)
@@ -19,7 +19,7 @@ This app has two main features:
 
 * It lists issues the maintainer considers active.
 * It auto-comments soon after an issue/pull request is opened with a
-  link to the issue on the active issues list. This link is unique and
+  link to the issue on the issues list (usually < 1min). This link is unique and
   remains valid as long as the issue is active. Also, active issues
   are auto-updated any time an issue is closed or opened.
 
@@ -49,7 +49,7 @@ $ heroku open
 
 ## Webhooks
 
-In order to use [features](#features) 2 and 3, you need webhooks
+In order to use auto-comments, you need webhooks
 on your repositories. Here are the commands to use:
 
 * To create a hook for just one repository:
