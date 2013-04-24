@@ -19,6 +19,7 @@
              (has-args ["cldwalker" "repo" 10 body-expects])
              (times once))]
            (with-redefs [github/viewable-issues (constantly issues)
+                         config/app-domain (constantly "http://localhost:8080")
                          config/gh-auth (constantly "user:pass")]
              (github/create-issue-comment {} id 10)))))
 
