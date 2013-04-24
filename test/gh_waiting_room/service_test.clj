@@ -26,7 +26,7 @@
   (let [body (body-of-home-page)]
     (is (.contains
          body
-         "<h1>Hal's Github Waiting Room</h1>")
+         "<h1>Hal's Active Github Issues</h1>")
         "Owner of issues is clearly shown.")
     (is (.contains
          body
