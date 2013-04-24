@@ -18,6 +18,14 @@
   font: 15px/1.5 Helvetica, sans-serif;
   padding-left: 70px;
   color: #555;
+  margin: 7px;
+}
+
+#issues p.name {
+  font-size: 22px;
+}
+#issues p.title {
+  font-size: 19px;
 }
  
 #issues span {
