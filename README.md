@@ -109,5 +109,4 @@ then this is for you.
 * @visibletrap for [hmac-sha1 code](https://gist.github.com/visibletrap/4571244)
   
 ## TODO
-* De-uglify the issues list
 * Lein task to be run nightly for adding webhooks to new repositories
