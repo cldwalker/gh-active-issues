@@ -12,12 +12,13 @@
 <h1>{{github-user}}'s Github Waiting Room</h1>
 </div>
 <div class='row'>
-<h5>The issues below are either unanswered or open ones I need to
-  address. If you'd like to have your issue addressed sooner, follow
+<h4 class='subheader'>The issues below are either unanswered or need
+  to be resolved. If you'd like to have your issue answered sooner, follow
   the contributing guidelines. Also, helping out with issues before
-  yours wouldn't hurt.</h5>
+  yours wouldn't hurt. ;)</h4>
+<hr/>
 </div>
-<div class='row'>
+<div id='issues' class='row'>
 <ol>
 {{#issues}}
     <li id="issue_{{position}}">
@@ -36,8 +37,10 @@
 {{/issues}}
 </ol>
 </div>
-<div class='footer'>
-<a href="https://github.com/cldwalker/gh-waiting-room">Source Code</a> |
+<div class="row">
+
+</div>
+<div class='row'>
 Powered by
 <a href="http://pedestal.io/">
 <img src="pedestal-glyph.png" width="16" height="16"/>
@@ -45,6 +48,8 @@ Pedestal</a> and
 <a href="http://developer.github.com/">
 <img src="octocat.png" width="20" height="20"/>
 Github's API</a>
+<a id="source_code" class='button small round'
+   href="https://github.com/cldwalker/gh-waiting-room">Source Code</a>
 </div>
 </body>
 </html>
