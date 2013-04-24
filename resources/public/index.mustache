@@ -1,14 +1,22 @@
 <!DOCTYPE html>
 <head>
+    <meta charset='utf-8' />
+    <meta charset='width=device-width' />
+    <link href='/stylesheets/foundation.min.css' rel='stylesheet' />
+    <link href="/application.css" rel="stylesheet" type="text/css" />
 <title>{{github-user}}'s Github Waiting Room</title>
-<link href="/application.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
+<div class='row'>
 <h1>{{github-user}}'s Github Waiting Room</h1>
-<h2>The issues below are either unanswered or open ones I need to
+</div>
+<div class='row'>
+<h5>The issues below are either unanswered or open ones I need to
   address. If you'd like to have your issue addressed sooner, follow
   the contributing guidelines. Also, helping out with issues before
-  yours wouldn't hurt.</h2>
+  yours wouldn't hurt.</h5>
+</div>
+<div class='row'>
 <ol>
 {{#issues}}
     <li id="issue_{{position}}">
@@ -26,7 +34,8 @@
     </li>
 {{/issues}}
 </ol>
-<footer>
+</div>
+<div class='footer'>
 <a href="https://github.com/cldwalker/gh-waiting-room">Source Code</a> |
 Powered by
 <a href="http://pedestal.io/">
@@ -35,6 +44,6 @@ Pedestal</a> and
 <a href="http://developer.github.com/">
 <img src="octocat.png" width="20" height="20"/>
 Github's API</a>
-</footer>
+</div>
 </body>
 </html>
