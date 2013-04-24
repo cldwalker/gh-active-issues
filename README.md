@@ -106,7 +106,11 @@ then this is for you.
 ## Credits
 * Joshua Johnson for providing list styling in
   [this article](http://designshack.net/articles/css/5-simple-and-practical-css-list-styles-you-can-copy-and-paste/)
-* @visibletrap for [hmac-sha1 code](https://gist.github.com/visibletrap/4571244)
+* @visibletrap for
+  [hmac-sha1 code](https://gist.github.com/visibletrap/4571244)
+* @Raynes for making
+  [github's API fun and easy to use](https://github.com/Raynes/tentacles)
+* @pedestal for [pedestal-service](https://github.com/pedestal/pedestal/tree/master/service)
   
 ## TODO
 * Lein task to be run nightly for adding webhooks to new repositories
