@@ -10,6 +10,7 @@
               [gh-waiting-room.config :refer [gh-user gh-hmac-secret]]
               [gh-waiting-room.github :refer [create-issue-comment
                                               viewable-issues fetch-gh-issues]]
+              [clj-airbrake.ring :as airbrake]
               [ring.util.response :as ring-resp]))
 
 (def db (atom {}))
@@ -58,10 +59,13 @@
           (update-gh-issues)))))
   {:status 200})
 
+(def api-key "3652443b714609e2625214815e5af7e2")
+(def wrapped-webhook-page (airbrake/wrap-airbrake webhook-page api-key))
+
 (defroutes routes
   [[["/" {:get home-page}
      ^:interceptors [bootstrap/html-body]
-     ["/webhook" {:post webhook-page}]
+     ["/webhook" {:post wrapped-webhook-page}]
      ]]])
 
 ;; You can use this fn or a per-request fn via io.pedestal.service.http.route/url-for

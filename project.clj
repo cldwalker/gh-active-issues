@@ -8,6 +8,7 @@
                  [de.ubercode.clostache/clostache "1.3.1"]
                  [tentacles "0.2.4"]
                  [table "0.4.0"]
+                 [clj-airbrake "2.0.1"]
 
                  ;; Remove this line and uncomment the next line to
                  ;; use Tomcat instead of Jetty:
