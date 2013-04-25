@@ -3,7 +3,7 @@
             clojure.string
             [gh-active-issues.github :refer [all-hooks create-all-webhooks
                                             create-webhook delete-webhook
-                                            repo-hooks]]))
+                                            repo-hooks delete-all-webhooks]]))
 
 (defn print-hooks []
   (println "Fetching hooks...")
@@ -25,9 +25,11 @@
       (abort "Usage: lein github create-hook [:all|USER REPO]"))))
 
 (defn delete-hooks [args]
-  (when-not (= 3 (count args))
-    (abort "Usage: lein github delete-hook USER REPO ID"))
-  (apply delete-webhook args))
+  (if (=  ":all" (first args))
+    (delete-all-webhooks)
+    (if (= 3 (count args))
+      (apply delete-webhook args)
+      (abort "Usage: lein github delete-hook [:all|USER REPO ID]"))))
 
 (defn list-hooks [args]
   (case (count args)

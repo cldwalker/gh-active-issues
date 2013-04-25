@@ -54,7 +54,7 @@ on your repositories. Here are the commands to use:
 
 * To create a hook for just one repository:
   `GITHUB_APP_DOMAIN=my-domain GITHUB_HMAC_SECRET=my-secret lein github create-hook USER REPO`
-* To create hooks for all your original repositories:
+* To create hooks for all your original repositories (*caution: one API call per repository*):
   `GITHUB_APP_DOMAIN=my-domain GITHUB_HMAC_SECRET=my-secret lein github create-hook :all`
 * To list your hooks (*caution: one API call per repository*):
   `lein github hooks`
@@ -62,6 +62,9 @@ on your repositories. Here are the commands to use:
   `lein github hooks USER REPO`
 * To delete a hook for just one repository:
   `lein github delete-hook USER REPO ID`
+* To delete a hook for just one repository (*caution: one API call per
+  repository*):
+  `lein github delete-hook :all`
 
 ## Configuration
 

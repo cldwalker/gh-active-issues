@@ -112,8 +112,17 @@
 
 (defn delete-webhook
   [user name id]
-  (when (delete-hook user name id (gh-auth))
-    (println (format "Deleted webhook for %s/%s" user name))))
+  (if (delete-hook user name id (gh-auth))
+    (println (format "Deleted webhook for %s/%s" user name))
+    (println (format "Failed to delete webhook for %s/%s" user name))))
+
+(defn delete-all-webhooks
+  []
+  (let [repos (list-repos-with-hooks)]
+    (println (format "About to delete webhooks for up to %s repositores..." (count repos)))
+    (doseq [repo repos]
+      (if-let [hook (some #(and (= (:url %) (full-url-for "/webhook")) %) (:hooks repo))]
+        (delete-webhook (:owner repo) (:name repo) (:id hook))))))
 
 (defn create-all-webhooks
   "Creates webhooks for all repositories that don't have one in $GITHUB_APP_DOMAIN."
