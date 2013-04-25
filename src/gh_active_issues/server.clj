@@ -1,6 +1,6 @@
-(ns gh-waiting-room.server
+(ns gh-active-issues.server
   (:gen-class) ; for -main method in uberjar
-  (:require [gh-waiting-room.service :as service]
+  (:require [gh-active-issues.service :as service]
             [io.pedestal.service.http :as bootstrap]))
 
 (def service-instance

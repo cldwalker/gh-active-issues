@@ -1,9 +1,9 @@
-(ns gh-waiting-room.github-test
+(ns gh-active-issues.github-test
   (:require [clojure.test :refer :all]
             tentacles.issues
-            [gh-waiting-room.test-helper :refer [disallow-web-requests!]]
-            [gh-waiting-room.config :as config]
-            [gh-waiting-room.github :as github :refer [->issue]]
+            [gh-active-issues.test-helper :refer [disallow-web-requests!]]
+            [gh-active-issues.config :as config]
+            [gh-active-issues.github :as github :refer [->issue]]
             [echo.test.mock :refer [expect has-args times once]]))
 
 (def valid-issue {:id "cldwalker/repo#10" :owner "cldwalker" :name "repo" :type "issue" :position 10})

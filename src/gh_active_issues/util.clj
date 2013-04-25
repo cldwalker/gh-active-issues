@@ -1,4 +1,4 @@
-(ns gh-waiting-room.util)
+(ns gh-active-issues.util)
 
 (defn hex-hmac-sha1
   "Generate hex for a given secret key and string. From https://gist.github.com/visibletrap/4571244"

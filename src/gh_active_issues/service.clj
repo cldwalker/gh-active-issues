@@ -1,4 +1,4 @@
-(ns gh-waiting-room.service
+(ns gh-active-issues.service
     (:require [io.pedestal.service.http :as bootstrap]
               [io.pedestal.service.http.route :as route]
               [io.pedestal.service.http.body-params :as body-params]
@@ -6,9 +6,9 @@
               [io.pedestal.service.interceptor :refer [defon-response]]
               [clostache.parser :refer [render-resource]]
               [clojure.data.json :as json]
-              [gh-waiting-room.util :refer [get-in! get! hex-hmac-sha1]]
-              [gh-waiting-room.config :refer [gh-user gh-hmac-secret]]
-              [gh-waiting-room.github :refer [create-issue-comment
+              [gh-active-issues.util :refer [get-in! get! hex-hmac-sha1]]
+              [gh-active-issues.config :refer [gh-user gh-hmac-secret]]
+              [gh-active-issues.github :refer [create-issue-comment
                                               viewable-issues fetch-gh-issues]]
               [ring.util.response :as ring-resp]))
 
@@ -67,7 +67,7 @@
 ;; You can use this fn or a per-request fn via io.pedestal.service.http.route/url-for
 (def url-for (route/url-for-routes routes))
 
-;; Consumed by gh-waiting-room.server/create-server
+;; Consumed by gh-active-issues.server/create-server
 (def service {:env :prod
               ;; You can bring your own non-default interceptors. Make
               ;; sure you include routing and set it up right for

@@ -1,7 +1,7 @@
 (ns dev
   (:require [io.pedestal.service.http :as bootstrap]
-            [gh-waiting-room.service :as service]
-            [gh-waiting-room.server :as server]))
+            [gh-active-issues.service :as service]
+            [gh-active-issues.server :as server]))
 
 (def service (-> service/service ;; start with production configuration
                  (merge  {:env :dev

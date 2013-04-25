@@ -1,8 +1,8 @@
-(ns gh-waiting-room.github
+(ns gh-active-issues.github
   (:require [tentacles.issues :refer [my-issues create-comment]]
-            [gh-waiting-room.util :refer [get-in! get!]]
+            [gh-active-issues.util :refer [get-in! get!]]
             [tentacles.repos :refer [create-hook hooks repos delete-hook]]
-            [gh-waiting-room.config :refer [gh-auth issue-url-regex gh-hide-labels
+            [gh-active-issues.config :refer [gh-auth issue-url-regex gh-hide-labels
                                             gh-hmac-secret app-domain gh-user hook-forks]]))
 
 ; TODO: can this come from url-for?

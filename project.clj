@@ -1,6 +1,6 @@
-(defproject gh-waiting-room "0.0.1-SNAPSHOT"
+(defproject gh-active-issues "0.0.1-SNAPSHOT"
   :description "A pedestal service that helps github maintainers grapple with their issues and helps users understand what's before their issue."
-  :url "https://github.com/cldwalker/gh-waiting-room"
+  :url "https://github.com/cldwalker/gh-active-issues"
   :license {:name "The MIT License"
             :url "https://en.wikipedia.org/wiki/MIT_License"}
   :dependencies [[org.clojure/clojure "1.5.0"]
@@ -23,5 +23,5 @@
                    :dependencies [[org.clojars.echo/test.mock "0.1.2"]]}}
   :min-lein-version "2.0.0"
   :resource-paths ["config", "resources"]
-  :main ^{:skip-aot true} gh-waiting-room.server
-  :aliases {"github" ["trampoline" "run" "-m" "gh-waiting-room.github-tasks"]})
+  :main ^{:skip-aot true} gh-active-issues.server
+  :aliases {"github" ["trampoline" "run" "-m" "gh-active-issues.github-tasks"]})

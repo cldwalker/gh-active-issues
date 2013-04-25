@@ -1,7 +1,7 @@
-(ns gh-waiting-room.github-tasks
+(ns gh-active-issues.github-tasks
   (:require [table.core :refer [table]]
             clojure.string
-            [gh-waiting-room.github :refer [all-hooks create-all-webhooks
+            [gh-active-issues.github :refer [all-hooks create-all-webhooks
                                             create-webhook delete-webhook
                                             repo-hooks]]))
 

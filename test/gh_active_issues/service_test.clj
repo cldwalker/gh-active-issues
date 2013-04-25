@@ -1,12 +1,12 @@
-(ns gh-waiting-room.service-test
+(ns gh-active-issues.service-test
   (:require [clojure.test :refer :all]
             [io.pedestal.service.test :refer :all]
-            [gh-waiting-room.test-helper :refer [disallow-web-requests!]]
+            [gh-active-issues.test-helper :refer [disallow-web-requests!]]
             [io.pedestal.service.http :as bootstrap]
-            [gh-waiting-room.github :as github]
-            [gh-waiting-room.config :as config]
+            [gh-active-issues.github :as github]
+            [gh-active-issues.config :as config]
             [clojure.data.json :as json]
-            [gh-waiting-room.service :as service]))
+            [gh-active-issues.service :as service]))
 
 (def service
   (::bootstrap/service-fn (bootstrap/create-servlet service/service)))
@@ -16,8 +16,8 @@
   (disallow-web-requests!
    (with-redefs [github/viewable-issues
                  (constantly [{:position "1"
-                               :id "cldwalker/gh-waiting-room#1"
-                               :url "https://github.com/cldwalker/gh-waiting-room/issues/1"}])
+                               :id "cldwalker/gh-active-issues#1"
+                               :url "https://github.com/cldwalker/gh-active-issues/issues/1"}])
                  service/update-gh-issues (constantly nil)
                  config/gh-user (constantly "Hal")]
      (:body (response-for service :get "/")))))
@@ -30,7 +30,7 @@
         "Owner of issues is clearly shown.")
     (is (.contains
          body
-         "href=\"https://github.com/cldwalker/gh-waiting-room/issues/1\"")
+         "href=\"https://github.com/cldwalker/gh-active-issues/issues/1\"")
         "Issues link back to their origin.")
     (is (.contains
          body
@@ -38,7 +38,7 @@
         "Issues can be referenced by position.")
     (is (.contains
          body
-         "id=\"cldwalker/gh-waiting-room#1\" href=\"#cldwalker/gh-waiting-room#1\"")
+         "id=\"cldwalker/gh-active-issues#1\" href=\"#cldwalker/gh-active-issues#1\"")
         "Issues can be referenced by their unique id and users know of it.")))
 
 (defn inc-mock-count [mocks-called key]

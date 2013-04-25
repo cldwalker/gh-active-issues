@@ -1,4 +1,4 @@
-(ns gh-waiting-room.test-helper)
+(ns gh-active-issues.test-helper)
 
 (defn fail-request!
   [{:keys [uri server-name server-port query-string scheme]}]

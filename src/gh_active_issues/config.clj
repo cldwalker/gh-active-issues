@@ -1,4 +1,4 @@
-(ns gh-waiting-room.config
+(ns gh-active-issues.config
   (:require clojure.string))
 
 (defn getenv

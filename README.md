@@ -11,7 +11,7 @@ expectations of turnaround time and feel ignored. Let's fix this!
 
 My current active issues [live on heroku](https://gh-waiting-room.herokuapp.com/).
 
-[![Build Status](https://travis-ci.org/cldwalker/gh-waiting-room.png?branch=master)](https://travis-ci.org/cldwalker/gh-waiting-room)
+[![Build Status](https://travis-ci.org/cldwalker/gh-active-issues.png?branch=master)](https://travis-ci.org/cldwalker/gh-active-issues)
 
 ## Features
 
@@ -25,7 +25,7 @@ This app has two main features:
 
 The second feature is enabled per repository using webhooks. To see
 these features in action feel free to open/close an issue on
-[this repository](https://github.com/cldwalker/gh-waiting-room/issues).
+[this repository](https://github.com/cldwalker/gh-active-issues/issues).
 To set up webhooks see [webhooks](#webhooks).
 
 ## Running the App
@@ -111,6 +111,6 @@ then this is for you.
 * @Raynes for making
   [github's API fun and easy to use](https://github.com/Raynes/tentacles)
 * @pedestal for [pedestal-service](https://github.com/pedestal/pedestal/tree/master/service)
-  
+
 ## TODO
 * Lein task to be run nightly for adding webhooks to new repositories
