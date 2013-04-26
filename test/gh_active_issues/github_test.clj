@@ -29,10 +29,10 @@
   (testing "throws error since no repository is found for given id"
     (is (thrown? clojure.lang.ExceptionInfo
                  (create-comment :id "cldwalker/not-found#10"))))
-  (testing "creates comment for issue with correct body position and link"
-    (create-comment :issues [valid-issue]
+  (testing "creates comment for issue with correct body issue count and link"
+    (create-comment :issues [valid-issue (assoc valid-issue :id "cldwalker/repo#11")]
                     :body-expects
-                    #(.contains % "[#10 in my list of open issues](http://localhost:8080/#cldwalker/repo#10)")))
+                    #(.contains % "[one of my 2 active issues](http://localhost:8080/#cldwalker/repo#10)")))
   (testing "creates comment for issue with correct body intro"
     (create-comment :issues [(assoc valid-issue :type "issue")]
                     :body-expects #(re-find #"^Thanks for reporting your issue" %)))

@@ -54,13 +54,13 @@
 
 (defn- comment-body
   "Creates the comment body for an auto comment kicked off by an issue being opened or closed."
-  [issue]
+  [issue issues-count]
   (str
    (if (= (:type issue) "pull request")
      "Thanks for your pull request!"
      "Thanks for reporting your issue!")
-   (format " You're [#%s in my list of open issues](%s). Use that link to check how soon your issue will be answered. Thanks for your patience."
-           (:position issue)
+   (format " This is [one of my %s active issues](%s). Use that link to check how soon your issue will be answered. Cheers."
+           issues-count
            (full-url-for (str "/#" (:id issue))))))
 
 ;;; github fns
@@ -136,8 +136,9 @@
 (defn create-issue-comment
   "Creates a comment for an issue given a map (db of issues)."
   [db issue-id issue-num]
-  (let [issue (or
-               (some #(and (= (:id %) issue-id) %) (viewable-issues db))
+  (let [issues (viewable-issues db)
+        issue (or
+               (some #(and (= (:id %) issue-id) %) issues)
                (throw (ex-info "No issue found for webhook" {:issue-id issue-id})))
-        body (comment-body issue)]
+        body (comment-body issue (count issues))]
     (create-comment (:owner issue) (:name issue) issue-num body (gh-auth))))

@@ -1,6 +1,6 @@
 ## Description
 
-This is an app to tell users what number they are in my list of
+This is an app to tell users where they are in my list of
 active github issues. Unfortunately, github neither provides a public
 view of a maintainer's
 [issues dashboard](https://github.com/dashboard/issues/repos)
