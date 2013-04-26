@@ -62,8 +62,7 @@ on your repositories. Here are the commands to use:
   `lein github hooks USER REPO`
 * To delete a hook for just one repository:
   `lein github delete-hook USER REPO ID`
-* To delete a hook for just one repository (*caution: one API call per
-  repository*):
+* To delete all hooks (*caution: one API call per repository*):
   `lein github delete-hook :all`
 
 ## Configuration
