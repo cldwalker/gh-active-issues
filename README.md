@@ -88,7 +88,7 @@ and issues the public can see:
   is specified, the default is to hide issues with any labels.
 * `$GITHUB_APP_DOMAIN` - This is required if you're using auto-commenting.
   This should be the full domain of your app and will be used mainly
-  for link generation.
+  for link generation. Does not handle trailing slash.
 * `$GITHUB_HOOK_FORKS` - When set to anything i.e. "1", this includes
   forks for listing and creating webhooks.
 
