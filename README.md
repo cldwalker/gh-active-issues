@@ -9,7 +9,7 @@ nor provides a view for a maintainer to see their active issues across repositor
 increasingly ignore most of their issues and users often have unrealistic
 expectations of turnaround time and feel ignored. Let's fix this!
 
-My current active issues [live on heroku](https://gh-waiting-room.herokuapp.com/).
+My current active issues [live on heroku](https://gh-active-issues.herokuapp.com/).
 
 [![Build Status](https://travis-ci.org/cldwalker/gh-active-issues.png?branch=master)](https://travis-ci.org/cldwalker/gh-active-issues)
 
