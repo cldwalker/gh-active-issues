@@ -60,13 +60,11 @@
      (with-redefs [service/update-gh-issues (inc-mock-count mocks-called :update-gh-issues)
                    github/create-issue-comment (inc-mock-count mocks-called :create-issue-comment)
                    github/viewable-issues (constantly issues)
-                   ;; TODO: just create an actual stream
-                   slurp (constantly body)
                    config/gh-hmac-secret (constantly secret)]
-       (service/webhook-page {:body body :headers headers}))
+       ;;; TODO - turn off noisy erroring, redefs doesn't work
+       (response-for service :post "/webhook" :body body :headers headers))
      @mocks-called)))
 
-;;; Doesn't use response-for as it doesn't support :post yet
 (deftest webhook-page-test-without-secret
   (is (= (fns-called-for-webhook-page "opened")
          {:update-gh-issues 1 :create-issue-comment 1})
@@ -81,14 +79,14 @@
       "Updates issues for an active issue that is closed"))
 
 (deftest webhook-page-test-with-secret
-  (is (thrown? clojure.lang.ExceptionInfo
-               (fns-called-for-webhook-page "opened"
-                                            :secret "opensesame"))
+  (is (= {}
+         (fns-called-for-webhook-page "opened"
+                                      :secret "opensesame"))
       "fails authentication with no header")
-  (is (thrown? clojure.lang.ExceptionInfo
-               (fns-called-for-webhook-page "opened"
-                                            :secret "opensesame"
-                                            :sha1 "sha1=password"))
+  (is (= {}
+         (fns-called-for-webhook-page "opened"
+                                      :secret "opensesame"
+                                      :sha1 "sha1=password"))
       "fails authentication with invalid sha1")
   (is (= (fns-called-for-webhook-page "opened"
                                       :secret "opensesame"
