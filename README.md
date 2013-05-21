@@ -47,6 +47,15 @@ $ git push heroku master
 $ heroku open
 ```
 
+Optionally, if you'd like for your app to periodically check to create webhooks for newly
+created repositories:
+
+```sh
+$ heroku addons:add scheduler:standard
+$ heroku addons:open scheduler:standard
+# Add a daily task with command: lein github create-hook :all
+```
+
 ## Webhooks
 
 In order to use auto-comments, you need webhooks
@@ -113,6 +122,3 @@ then this is for you.
 * @Raynes for making
   [github's API fun and easy to use](https://github.com/Raynes/tentacles)
 * @pedestal for [pedestal-service](https://github.com/pedestal/pedestal/tree/master/service)
-
-## TODO
-* Lein task to be run nightly for adding webhooks to new repositories
