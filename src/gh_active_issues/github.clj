@@ -59,7 +59,7 @@
    (if (= (:type issue) "pull request")
      "Thanks for your pull request!"
      "Thanks for reporting your issue!")
-   (format " This is [one of my %s active issues](%s). Use that link to check how soon your issue will be answered. Cheers."
+   (format " This is [one of my %s active issues](%s). Use that link to check how soon your issue will be answered. Don't forget to check your issue against this project's CONTRIBUTING.md. Cheers."
            issues-count
            (full-url-for (str "/#" (:id issue))))))
 
