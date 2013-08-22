@@ -33,7 +33,7 @@
    :url (get! issue :html_url)
    :comments (get! issue :comments)
    :title (get! issue :title)
-   :desc (let [body (get! issue :body)]
+   :desc (when-let [body (get issue :body)]
            (str (re-find #"^.{0,100}(?=\s|$)" body)
                 (if (> (count body) 100) " ..." "")))
    :owner (get-in! issue [:repository :owner :login])

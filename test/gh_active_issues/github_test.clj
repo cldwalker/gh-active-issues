@@ -74,6 +74,8 @@
     (is (thrown? clojure.lang.ExceptionInfo
                  (->issue
                   (assoc valid-gh-issue :created_at "2013-01")))))
+  (testing "desc can be blank"
+    (is (= nil (-> valid-gh-issue (dissoc :body) ->issue :desc))))
   (testing "desc handles whitespace-only string"
     (is (= (:desc (->issue (assoc valid-gh-issue :body "  ")))
            "  ")))
