@@ -3,7 +3,8 @@
               [io.pedestal.service.http.route :as route]
               [io.pedestal.service.http.body-params :as body-params]
               [io.pedestal.service.http.route.definition :refer [defroutes]]
-              [io.pedestal.service.interceptor :refer [defon-response]]
+              [io.pedestal.service.interceptor :refer [definterceptor] :as interceptor]
+              [io.pedestal.service.log :as log]
               [clostache.parser :refer [render-resource]]
               [clojure.data.json :as json]
               [gh-active-issues.util :refer [get-in! get! hex-hmac-sha1]]
@@ -58,9 +59,17 @@
           (update-gh-issues)))))
   {:status 200})
 
+(definterceptor log-exception-data
+  (interceptor/interceptor
+    :name ::log-exception-info
+    :error (fn [{:keys [servlet-response] :as context} exception]
+             (log/error :exception exception
+                        :msg (str "Unexpected exception within application: " exception)
+                        :exception-data (ex-data exception)))))
+
 (defroutes routes
   [[["/" {:get home-page}
-     ^:interceptors [bootstrap/html-body]
+     ^:interceptors [log-exception-data bootstrap/html-body]
      ["/webhook" {:post webhook-page}]
      ]]])
 
